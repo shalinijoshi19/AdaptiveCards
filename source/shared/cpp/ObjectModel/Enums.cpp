@@ -59,6 +59,7 @@ namespace AdaptiveSharedNamespace
             {AdaptiveCardSchemaKey::ForegroundColors, "foregroundColors"},
             {AdaptiveCardSchemaKey::Good, "good"},
             {AdaptiveCardSchemaKey::Height, "height"},
+            {AdaptiveCardSchemaKey::Highlight, "highlight"},
             {AdaptiveCardSchemaKey::HorizontalAlignment, "horizontalAlignment"},
             {AdaptiveCardSchemaKey::IconPlacement, "iconPlacement"},
             {AdaptiveCardSchemaKey::IconSize, "iconSize"},
