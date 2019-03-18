@@ -4,7 +4,7 @@
 using namespace AdaptiveSharedNamespace;
 
 TextRun::TextRun() :
-    Inline(InlineElementType::TextRun), m_textElementProperties(std::make_shared<TextElementProperties>())
+    Inline(InlineElementType::TextRun), m_textElementProperties(std::make_shared<TextElementProperties>()), m_highlight(false)
 {
     PopulateKnownPropertiesSet();
 }
