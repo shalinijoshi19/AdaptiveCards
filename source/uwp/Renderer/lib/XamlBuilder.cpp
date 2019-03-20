@@ -1774,94 +1774,6 @@ namespace AdaptiveNamespace
         return solidColorBrushAsBrush;
     }
 
-    // HRESULT XamlBuilder::BuildRichTextBlock(ABI::AdaptiveNamespace::IAdaptiveCardElement* adaptiveCardElement,
-    //                                        ABI::AdaptiveNamespace::IAdaptiveRenderContext* renderContext,
-    //                                        ABI::AdaptiveNamespace::IAdaptiveRenderArgs* renderArgs,
-    //                                        ABI::Windows::UI::Xaml::IUIElement** textBlockControl)
-    //{
-    //    // Create the top level rich text block and set it's properties
-    //    ComPtr<IRichTextBlock> xamlRichTextBlock =
-    //        XamlHelpers::CreateXamlClass<IRichTextBlock>(HStringReference(RuntimeClass_Windows_UI_Xaml_Controls_RichTextBlock));
-
-    //    ComPtr<IVector<Block*>> xamlBlocks;
-    //    RETURN_IF_FAILED(xamlRichTextBlock->get_Blocks(&xamlBlocks));
-
-    //    ComPtr<IParagraph> xamlParagraph =
-    //        XamlHelpers::CreateXamlClass<IParagraph>(HStringReference(RuntimeClass_Windows_UI_Xaml_Documents_Paragraph));
-
-    //    ComPtr<IBlock> paragraphAsBlock;
-    //    RETURN_IF_FAILED(xamlParagraph.As(&paragraphAsBlock));
-    //    RETURN_IF_FAILED(xamlBlocks->Append(paragraphAsBlock.Get()));
-
-    //    // Add the Inlines
-    //    ComPtr<IVector<ABI::Windows::UI::Xaml::Documents::Inline*>> xamlInlines;
-    //    RETURN_IF_FAILED(xamlParagraph->get_Inlines(&xamlInlines));
-
-    //    for (UINT i = 0; i < 2; i++)
-    //    {
-    //        ComPtr<IRun> run = XamlHelpers::CreateXamlClass<IRun>(HStringReference(RuntimeClass_Windows_UI_Xaml_Documents_Run));
-
-    //        std::string text("This is a text run");
-    //        HString hstring;
-    //        UTF8ToHString(text, hstring.GetAddressOf());
-
-    //        RETURN_IF_FAILED(run->put_Text(hstring.Get()));
-
-    //        ComPtr<IInline> runAsInline;
-    //        run.As(&runAsInline);
-
-    //        xamlInlines->Append(runAsInline.Get());
-
-    //        ComPtr<ITextElement> textElement;
-    //        run.As(&textElement);
-
-    //        ComPtr<ITextPointer> textPointerStart;
-    //        textElement->get_ElementStart(&textPointerStart);
-
-    //        ComPtr<ITextPointer> textPointerEnd;
-    //        textElement->get_ElementEnd(&textPointerEnd);
-
-    //        ComPtr<IRichTextBlock5> xamlRichTextBlock5;
-    //        xamlRichTextBlock.As(&xamlRichTextBlock5);
-
-    //        ComPtr<IVector<TextHighlighter*>> textHighlighters;
-    //        xamlRichTextBlock5->get_TextHighlighters(&textHighlighters);
-
-    //        ComPtr<ITextHighlighter> textHighlighter = XamlHelpers::CreateXamlClass<ITextHighlighter>(
-    //            HStringReference(RuntimeClass_Windows_UI_Xaml_Documents_TextHighlighter));
-
-    //        ABI::Windows::UI::Color color;
-    //        GetColorFromString("#FF008000", &color);
-    //        textHighlighter->put_Background(GetSolidColorBrush(color).Get());
-
-    //        ComPtr<IVector<TextRange>> ranges;
-    //        textHighlighter->get_Ranges(&ranges);
-
-    //        INT32 startOffset;
-    //        textPointerStart->get_Offset(&startOffset);
-
-    //        INT32 endOffset;
-    //        textPointerEnd->get_Offset(&endOffset);
-
-    //        TextRange* textRange = new TextRange();
-    //        textRange->StartIndex = startOffset;
-    //        textRange->Length = (endOffset - startOffset) / 2;
-    //        //{startOffset, endOffset - startOffset};
-
-    //        ranges->Append(*textRange);
-    //        // ranges->Append(*textRange);
-
-    //        textHighlighter->get_Ranges(&ranges);
-    //        unsigned int rangesSize;
-    //        ranges->get_Size(&rangesSize);
-
-    //        textHighlighters->Append(textHighlighter.Get());
-    //    }
-    //    xamlRichTextBlock.CopyTo(textBlockControl);
-
-    //    return S_OK;
-    //}
-
     HRESULT XamlBuilder::BuildRichTextBlock(ABI::AdaptiveNamespace::IAdaptiveCardElement* adaptiveCardElement,
                                             ABI::AdaptiveNamespace::IAdaptiveRenderContext* renderContext,
                                             ABI::AdaptiveNamespace::IAdaptiveRenderArgs* renderArgs,
@@ -1953,7 +1865,6 @@ namespace AdaptiveNamespace
 
                             RETURN_IF_FAILED(SetXamlInlines(
                                 adaptiveTextElement.Get(), renderContext, renderArgs, true, hyperlinkInlines.Get(), &inlineLength));
-                            currentOffset += inlineLength;
 
                             ComPtr<ABI::Windows::UI::Xaml::Documents::IInline> hyperlinkAsInline;
                             RETURN_IF_FAILED(hyperlink.As(&hyperlinkAsInline));

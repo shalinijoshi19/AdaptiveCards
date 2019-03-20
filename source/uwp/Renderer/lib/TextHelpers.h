@@ -7,7 +7,7 @@ HRESULT AddHtmlInlines(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adapti
                        _In_ ABI::Windows::Data::Xml::Dom::IXmlNode* node,
                        bool isInHyperlink,
                        _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Windows::UI::Xaml::Documents::Inline*>* inlines,
-                       _Out_opt_ UINT* characterLength);
+                       _Out_ UINT* characterLength);
 
 HRESULT AddTextInlines(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adaptiveTextElement,
                        _In_ ABI::AdaptiveNamespace::IAdaptiveRenderContext* renderContext,
@@ -17,7 +17,7 @@ HRESULT AddTextInlines(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adapti
                        BOOL isItalic,
                        bool isInHyperlink,
                        _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Windows::UI::Xaml::Documents::Inline*>* inlines,
-                       _Out_opt_ UINT* characterLength);
+                       _Out_ UINT* characterLength);
 
 HRESULT AddSingleTextInline(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adaptiveTextElement,
                             _In_ ABI::AdaptiveNamespace::IAdaptiveRenderContext* renderContext,
@@ -27,7 +27,7 @@ HRESULT AddSingleTextInline(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* a
                             bool isItalic,
                             bool isInHyperlink,
                             _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Windows::UI::Xaml::Documents::Inline*>* inlines,
-                            _Out_opt_ UINT* characterLength);
+                            _Out_ UINT* characterLength);
 
 HRESULT SetXamlInlines(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adaptiveTextElement,
                        _In_ ABI::AdaptiveNamespace::IAdaptiveRenderContext* renderContext,

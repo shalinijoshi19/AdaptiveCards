@@ -112,6 +112,7 @@ HRESULT SetXamlInlines(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adapti
     auto htmlString = markdownParser.TransformToHtml();
 
     bool handledAsHtml = false;
+    UINT localCharacterLength;
     if (markdownParser.HasHtmlTags())
     {
         HString htmlHString;
@@ -131,7 +132,7 @@ HRESULT SetXamlInlines(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adapti
             RETURN_IF_FAILED(xmlDocument.As(&xmlDocumentAsNode));
 
             RETURN_IF_FAILED(
-                AddHtmlInlines(adaptiveTextElement, renderContext, renderArgs, xmlDocumentAsNode.Get(), isInHyperlink, inlines, characterLength));
+                AddHtmlInlines(adaptiveTextElement, renderContext, renderArgs, xmlDocumentAsNode.Get(), isInHyperlink, inlines, &localCharacterLength));
             handledAsHtml = true;
         }
     }
@@ -140,7 +141,12 @@ HRESULT SetXamlInlines(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adapti
     {
         HString hString;
         UTF8ToHString(textWithParsedDates, hString.GetAddressOf());
-        AddSingleTextInline(adaptiveTextElement, renderContext, renderArgs, hString.Get(), false, false, isInHyperlink, inlines, characterLength);
+        AddSingleTextInline(adaptiveTextElement, renderContext, renderArgs, hString.Get(), false, false, isInHyperlink, inlines, &localCharacterLength);
+    }
+
+    if (characterLength)
+    {
+        *characterLength = localCharacterLength;
     }
 
     return S_OK;
@@ -163,7 +169,7 @@ HRESULT AddListInlines(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adapti
                        bool isListOrdered,
                        bool isInHyperlink,
                        _In_ IVector<ABI::Windows::UI::Xaml::Documents::Inline*>* inlines,
-                       _Out_opt_ UINT* characterLength)
+                       _Out_ UINT* characterLength)
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlNamedNodeMap> attributeMap;
     RETURN_IF_FAILED(node->get_Attributes(&attributeMap));
@@ -210,22 +216,21 @@ HRESULT AddListInlines(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adapti
     while (listChild != nullptr)
     {
         std::wstring listElementString = isFirstListElement ? L"" : L"\n";
-        totalCharacterLength += isFirstListElement ? 0 : 1;
         if (!isListOrdered)
         {
             // Add a bullet
             listElementString += L"\x2022 ";
-            totalCharacterLength++;
         }
         else
         {
             listElementString += std::to_wstring(iteration);
             listElementString += L". ";
-            totalCharacterLength += 2;
         }
 
         HString listElementHString;
         RETURN_IF_FAILED(listElementHString.Set(listElementString.c_str()));
+
+        totalCharacterLength += WindowsGetStringLen(listElementHString.Get());
 
         ComPtr<ABI::Windows::UI::Xaml::Documents::IRun> run =
             XamlHelpers::CreateXamlClass<ABI::Windows::UI::Xaml::Documents::IRun>(
@@ -257,10 +262,7 @@ HRESULT AddListInlines(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adapti
         isFirstListElement = false;
     }
 
-    if (characterLength)
-    {
-        *characterLength = totalCharacterLength;
-    }
+    *characterLength = totalCharacterLength;
     return S_OK;
 }
 
@@ -271,7 +273,7 @@ HRESULT AddLinkInline(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adaptiv
                       BOOL isBold,
                       BOOL isItalic,
                       _In_ IVector<ABI::Windows::UI::Xaml::Documents::Inline*>* inlines,
-                      _Out_opt_ UINT* characterLength)
+                      _Out_ UINT* characterLength)
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlNamedNodeMap> attributeMap;
     RETURN_IF_FAILED(node->get_Attributes(&attributeMap));
@@ -322,7 +324,7 @@ HRESULT AddSingleTextInline(_In_ IAdaptiveTextElement* adaptiveTextElement,
                             bool isItalic,
                             bool isInHyperlink,
                             _In_ IVector<ABI::Windows::UI::Xaml::Documents::Inline*>* inlines,
-                            _Out_opt_ UINT* characterLength)
+                            _Out_ UINT* characterLength)
 {
     ComPtr<ABI::Windows::UI::Xaml::Documents::IRun> run = XamlHelpers::CreateXamlClass<ABI::Windows::UI::Xaml::Documents::IRun>(
         HStringReference(RuntimeClass_Windows_UI_Xaml_Documents_Run));
@@ -356,11 +358,8 @@ HRESULT AddSingleTextInline(_In_ IAdaptiveTextElement* adaptiveTextElement,
     RETURN_IF_FAILED(run.As(&runAsInline));
 
     RETURN_IF_FAILED(inlines->Append(runAsInline.Get()));
+    *characterLength = WindowsGetStringLen(string);
 
-    if (characterLength)
-    {
-        *characterLength = WindowsGetStringLen(string);
-    }
     return S_OK;
 }
 
@@ -372,7 +371,7 @@ HRESULT AddTextInlines(_In_ IAdaptiveTextElement* adaptiveTextElement,
                        BOOL isItalic,
                        bool isInHyperlink,
                        _In_ IVector<ABI::Windows::UI::Xaml::Documents::Inline*>* inlines,
-                       _Out_opt_ UINT* characterLength)
+                       _Out_ UINT* characterLength)
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlNode> childNode;
     RETURN_IF_FAILED(node->get_FirstChild(&childNode));
@@ -427,10 +426,7 @@ HRESULT AddTextInlines(_In_ IAdaptiveTextElement* adaptiveTextElement,
         totalCharacterLength += nodeCharacterLength;
     }
 
-    if (characterLength)
-    {
-        *characterLength = totalCharacterLength;
-    }
+    *characterLength = totalCharacterLength;
 
     return S_OK;
 }
@@ -441,7 +437,7 @@ HRESULT AddHtmlInlines(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adapti
                        _In_ ABI::Windows::Data::Xml::Dom::IXmlNode* node,
                        bool isInHyperlink,
                        _In_ IVector<ABI::Windows::UI::Xaml::Documents::Inline*>* inlines,
-                       _Out_opt_ UINT* characterLength)
+                       _Out_ UINT* characterLength)
 {
     ComPtr<ABI::Windows::Data::Xml::Dom::IXmlNode> childNode;
     RETURN_IF_FAILED(node->get_FirstChild(&childNode));
@@ -484,9 +480,6 @@ HRESULT AddHtmlInlines(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adapti
         totalCharacterLength += nodeCharacterLength;
     }
 
-    if (characterLength)
-    {
-        *characterLength = totalCharacterLength;
-    }
+    *characterLength = totalCharacterLength;
     return S_OK;
 }
