@@ -117,6 +117,19 @@ namespace AdaptiveNamespace
         return S_OK;
     }
 
+    HRESULT AdaptiveContainer::get_CanBleed(boolean* canBleed)
+    {
+        std::shared_ptr<AdaptiveSharedNamespace::BaseCardElement> baseCardSharedModel;
+        RETURN_IF_FAILED(GetSharedModel(baseCardSharedModel));
+
+        std::shared_ptr<AdaptiveSharedNamespace::Container> containterSharedModel =
+            std::static_pointer_cast<AdaptiveSharedNamespace::Container>(baseCardSharedModel);
+
+        *canBleed = containterSharedModel->GetCanBleed();
+
+        return S_OK;
+    }
+
     HRESULT AdaptiveContainer::GetSharedModel(std::shared_ptr<AdaptiveSharedNamespace::BaseCardElement>& sharedModel) try
     {
         std::shared_ptr<AdaptiveSharedNamespace::Container> container = std::make_shared<AdaptiveSharedNamespace::Container>();
