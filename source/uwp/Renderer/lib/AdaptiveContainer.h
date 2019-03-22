@@ -136,6 +136,7 @@ namespace AdaptiveNamespace
         ABI::AdaptiveNamespace::VerticalContentAlignment m_verticalAlignment;
         Microsoft::WRL::ComPtr<ABI::AdaptiveNamespace::IAdaptiveBackgroundImage> m_backgroundImage;
         boolean m_bleed;
+        boolean m_canBleed;
     };
 
     ActivatableClass(AdaptiveContainer);

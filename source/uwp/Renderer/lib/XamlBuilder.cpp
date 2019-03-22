@@ -2427,6 +2427,9 @@ namespace AdaptiveNamespace
         ComPtr<IAdaptiveHostConfig> hostConfig;
         RETURN_IF_FAILED(renderContext->get_HostConfig(&hostConfig));
 
+        boolean bleed;
+        RETURN_IF_FAILED(adaptiveContainer->get_Bleed(&bleed));
+
         // If container style was explicitly assigned, apply background
         if (hasExplicitContainerStyle)
         {
@@ -2435,8 +2438,8 @@ namespace AdaptiveNamespace
             ComPtr<IBrush> backgroundColorBrush = GetSolidColorBrush(backgroundColor);
             RETURN_IF_FAILED(containerBorder->put_Background(backgroundColorBrush.Get()));
 
-            // If the container style doesn't match its parent, apply padding.
-            if (containerStyle != parentContainerStyle)
+            // If the container style doesn't match its parent, and we're not bleeding, apply padding.
+            if (containerStyle != parentContainerStyle && !bleed)
             {
                 ComPtr<IAdaptiveSpacingConfig> spacingConfig;
                 RETURN_IF_FAILED(hostConfig->get_Spacing(&spacingConfig));
@@ -2624,10 +2627,10 @@ namespace AdaptiveNamespace
         ABI::AdaptiveNamespace::ContainerStyle containerStyle;
         RETURN_IF_FAILED(adaptiveColumnSet->get_Style(&containerStyle));
         bool hasExplicitContainerStyle{true};
+        ABI::AdaptiveNamespace::ContainerStyle parentContainerStyle;
         if (containerStyle == ABI::AdaptiveNamespace::ContainerStyle::None)
         {
             hasExplicitContainerStyle = false;
-            ABI::AdaptiveNamespace::ContainerStyle parentContainerStyle;
             RETURN_IF_FAILED(renderArgs->get_ContainerStyle(&parentContainerStyle));
             containerStyle = parentContainerStyle;
         }
@@ -2641,13 +2644,30 @@ namespace AdaptiveNamespace
         ComPtr<IAdaptiveHostConfig> hostConfig;
         RETURN_IF_FAILED(renderContext->get_HostConfig(&hostConfig));
         ABI::Windows::UI::Color backgroundColor;
-        if (hasExplicitContainerStyle && SUCCEEDED(GetBackgroundColorFromStyle(containerStyle, hostConfig.Get(), &backgroundColor)))
+        if (hasExplicitContainerStyle)
         {
-            ComPtr<IPanel> columnSetAsPanel;
-            RETURN_IF_FAILED(gridContainer.As(&columnSetAsPanel));
+            if (SUCCEEDED(GetBackgroundColorFromStyle(containerStyle, hostConfig.Get(), &backgroundColor)))
+            {
+                ComPtr<IPanel> columnSetAsPanel;
+                RETURN_IF_FAILED(gridContainer.As(&columnSetAsPanel));
 
-            ComPtr<IBrush> backgroundColorBrush = GetSolidColorBrush(backgroundColor);
-            RETURN_IF_FAILED(columnSetAsPanel->put_Background(backgroundColorBrush.Get()));
+                ComPtr<IBrush> backgroundColorBrush = GetSolidColorBrush(backgroundColor);
+                RETURN_IF_FAILED(columnSetAsPanel->put_Background(backgroundColorBrush.Get()));
+            }
+
+            // If the container style doesn't match its parent, and we're not bleeding, apply padding.
+            if (containerStyle != parentContainerStyle && !bleed)
+            {
+                ComPtr<IAdaptiveSpacingConfig> spacingConfig;
+                RETURN_IF_FAILED(hostConfig->get_Spacing(&spacingConfig));
+
+                UINT32 padding;
+                RETURN_IF_FAILED(spacingConfig->get_Padding(&padding));
+                DOUBLE paddingAsDouble = static_cast<DOUBLE>(padding);
+
+                Thickness paddingThickness = {paddingAsDouble, paddingAsDouble, paddingAsDouble, paddingAsDouble};
+                RETURN_IF_FAILED(containerBorder->put_Padding(paddingThickness));
+            }
         }
 
         ComPtr<IGrid> xamlGrid =

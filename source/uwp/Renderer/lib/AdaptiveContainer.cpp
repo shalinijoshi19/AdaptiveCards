@@ -36,6 +36,7 @@ namespace AdaptiveNamespace
         m_verticalAlignment =
             static_cast<ABI::AdaptiveNamespace::VerticalContentAlignment>(sharedContainer->GetVerticalContentAlignment());
         m_bleed = sharedContainer->GetBleed();
+        m_canBleed = sharedContainer->GetCanBleed();
 
         auto backgroundImage = sharedContainer->GetBackgroundImage();
         if (backgroundImage != nullptr && !backgroundImage->GetUrl().empty())
@@ -119,13 +120,18 @@ namespace AdaptiveNamespace
 
     HRESULT AdaptiveContainer::get_CanBleed(boolean* canBleed)
     {
-        std::shared_ptr<AdaptiveSharedNamespace::BaseCardElement> baseCardSharedModel;
-        RETURN_IF_FAILED(GetSharedModel(baseCardSharedModel));
+        // TODO: Current behavior is broken because it doesn't update when bleed updates. Unfortunately, neither does
+        // the shared model logic.
 
-        std::shared_ptr<AdaptiveSharedNamespace::Container> containterSharedModel =
-            std::static_pointer_cast<AdaptiveSharedNamespace::Container>(baseCardSharedModel);
+        // std::shared_ptr<AdaptiveSharedNamespace::BaseCardElement> baseCardSharedModel;
+        // RETURN_IF_FAILED(GetSharedModel(baseCardSharedModel));
 
-        *canBleed = containterSharedModel->GetCanBleed();
+        // std::shared_ptr<AdaptiveSharedNamespace::Container> containterSharedModel =
+        //    std::static_pointer_cast<AdaptiveSharedNamespace::Container>(baseCardSharedModel);
+
+        //*canBleed = containterSharedModel->GetCanBleed();
+
+        *canBleed = m_canBleed;
 
         return S_OK;
     }
