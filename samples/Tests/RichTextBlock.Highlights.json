@@ -1,0 +1,157 @@
+{
+	"$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+	"type": "AdaptiveCard",
+	"version": "1.2",
+	"body": [
+		{
+			"type": "RichTextBlock",
+			"wrap": true,
+			"paragraphs": [
+				{
+					"inlines": [
+						{
+							"type": "TextRun",
+							"text": "Highlights:",
+							"size": "large"
+						}
+					]
+				},
+				{
+					"inlines": [
+						{
+							"type": "TextRun",
+							"text": "Here is some text! "
+						},
+						{
+							"type": "TextRun",
+							"text": "Part of it is highlighted!",
+							"highlight": true
+						},
+						{
+							"type": "TextRun",
+							"text": " "
+						},
+						{
+							"type": "TextRun",
+							"text": "Subtle highlight!",
+							"isSubtle": true,
+							"highlight": true
+						},
+						{
+							"type": "TextRun",
+							"text": " "
+						},
+						{
+							"type": "TextRun",
+							"text": "Good highlight!",
+							"color": "Good",
+							"highlight": true
+						}
+					]
+				},
+				{},
+				{
+					"inlines": [
+						{
+							"type": "TextRun",
+							"text": "Highlights on links: ",
+							"size": "large"
+						}
+					]
+				},
+				{
+					"inlines": [
+						{
+							"type": "TextRun",
+							"text": "Here's a link: [Adaptive Cards](http://adaptivecards.io). "
+						},
+						{
+							"type": "TextRun",
+							"text": "Here's one that's highlighted: "
+						},
+						{
+							"type": "TextRun",
+							"text": "[Adaptive Cards](http://adaptivecards.io)",
+							"highlight": true
+						},
+						{
+							"type": "TextRun",
+							"text": ". Here's an inline action: "
+						},
+						{
+							"type": "TextRun",
+							"text": "Submit",
+							"selectAction": {
+								"type": "Action.Submit"
+							}
+						},
+						{
+							"type": "TextRun",
+							"text": "! Here's one that's highlighted: "
+						},
+						{
+							"type": "TextRun",
+							"text": "Submit!",
+							"highlight": true,
+							"selectAction": {
+								"type": "Action.Submit"
+							}
+						}
+					]
+				},
+				{},
+				{
+					"inlines": [
+						{
+							"type": "TextRun",
+							"text": "Highlights on lists:",
+							"size": "large"
+						}
+					]
+				},
+				{
+					"inlines": [
+						{
+							"type": "TextRun",
+							"text": "- Bullet \r- List \r"
+						},
+						{
+							"type": "TextRun",
+							"text": "1. Numbered\r2. List\r"
+						},
+						{
+							"type": "TextRun",
+							"text": "- Highlight \r- Bullet \r- List \r",
+							"highlight": true
+						},
+						{
+							"type": "TextRun",
+							"text": "1. Highlight\r2. Numbered\r3. List\r",
+							"highlight": true
+						}
+					]
+				}
+			]
+		},
+		{
+			"type": "Container",
+			"style": "emphasis",
+			"items": [
+				{
+					"type": "RichTextBlock",
+					"paragraphs": [
+						{
+							"inlines": [
+								{
+									"type": "TextRun",
+									"text": "Highlights in an emphasis container!",
+									"highlight": true
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	]
+}

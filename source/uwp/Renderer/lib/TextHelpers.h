@@ -127,7 +127,7 @@ HRESULT StyleTextElement(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adap
         RETURN_IF_FAILED(renderArgs->get_ContainerStyle(&containerStyle));
 
         ABI::Windows::UI::Color fontColor;
-        RETURN_IF_FAILED(GetColorFromAdaptiveColor(hostConfig.Get(), adaptiveTextColor, containerStyle, isSubtle, &fontColor));
+        RETURN_IF_FAILED(GetColorFromAdaptiveColor(hostConfig.Get(), adaptiveTextColor, containerStyle, isSubtle, false, &fontColor));
 
         Microsoft::WRL::ComPtr<ABI::Windows::UI::Xaml::Media::IBrush> fontColorBrush =
             AdaptiveNamespace::XamlBuilder::GetSolidColorBrush(fontColor);

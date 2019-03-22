@@ -1884,21 +1884,16 @@ namespace AdaptiveNamespace
 
                         if (highlight)
                         {
-                            ComPtr<ITextHighlighter> textHighlighter = XamlHelpers::CreateXamlClass<ITextHighlighter>(
-                                HStringReference(RuntimeClass_Windows_UI_Xaml_Documents_TextHighlighter));
-
-                            ABI::Windows::UI::Color color;
-                            GetColorFromString("#FF008000", &color);
-                            textHighlighter->put_Background(GetSolidColorBrush(color).Get());
+                            ComPtr<ITextHighlighter> textHighlighter;
+                            RETURN_IF_FAILED(GetHighlighter(adaptiveTextElement.Get(), renderContext, renderArgs, &textHighlighter));
 
                             ComPtr<IVector<TextRange>> ranges;
-                            textHighlighter->get_Ranges(&ranges);
+                            RETURN_IF_FAILED(textHighlighter->get_Ranges(&ranges));
 
                             TextRange textRange = {currentOffset, inlineLength};
+                            RETURN_IF_FAILED(ranges->Append(textRange));
 
-                            ranges->Append(textRange);
-
-                            textHighlighters->Append(textHighlighter.Get());
+                            RETURN_IF_FAILED(textHighlighters->Append(textHighlighter.Get()));
                         }
 
                         currentOffset += inlineLength;

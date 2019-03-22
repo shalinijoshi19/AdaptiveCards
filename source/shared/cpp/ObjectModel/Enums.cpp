@@ -60,6 +60,7 @@ namespace AdaptiveSharedNamespace
             {AdaptiveCardSchemaKey::Good, "good"},
             {AdaptiveCardSchemaKey::Height, "height"},
             {AdaptiveCardSchemaKey::Highlight, "highlight"},
+            {AdaptiveCardSchemaKey::HighlightColors, "highlightColors"},
             {AdaptiveCardSchemaKey::HorizontalAlignment, "horizontalAlignment"},
             {AdaptiveCardSchemaKey::IconPlacement, "iconPlacement"},
             {AdaptiveCardSchemaKey::IconSize, "iconSize"},

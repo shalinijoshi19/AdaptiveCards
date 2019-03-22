@@ -1921,6 +1921,9 @@ AdaptiveNamespaceStart
 
         [propget] HRESULT ForegroundColors([out, retval] AdaptiveColorsConfig** value);
         [propput] HRESULT ForegroundColors([in] AdaptiveColorsConfig* value);
+
+        [propget] HRESULT HighlightColors([out, retval] AdaptiveColorsConfig * *value);
+        [propput] HRESULT HighlightColors([in] AdaptiveColorsConfig * value);
     };
 
     [
