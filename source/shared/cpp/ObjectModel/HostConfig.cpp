@@ -596,27 +596,38 @@ std::string HostConfig::GetBackgroundColor(ContainerStyle style) const
     return GetContainerStyle(style).backgroundColor;
 }
 
-std::string HostConfig::GetForegroundColor(ContainerStyle style, ForegroundColor color, bool isSubtle) const
+std::string HostConfig::GetContainerColor(const ColorsConfig& colors, ForegroundColor color, bool isSubtle) const
 {
-    auto foregroundColors = GetContainerStyle(style).foregroundColors;
     switch (color)
     {
     case ForegroundColor::Accent:
-        return (isSubtle) ? (foregroundColors.accent.subtleColor) : (foregroundColors.accent.defaultColor);
+        return (isSubtle) ? (colors.accent.subtleColor) : (colors.accent.defaultColor);
     case ForegroundColor::Attention:
-        return (isSubtle) ? (foregroundColors.attention.subtleColor) : (foregroundColors.attention.defaultColor);
+        return (isSubtle) ? (colors.attention.subtleColor) : (colors.attention.defaultColor);
     case ForegroundColor::Dark:
-        return (isSubtle) ? (foregroundColors.dark.subtleColor) : (foregroundColors.dark.defaultColor);
+        return (isSubtle) ? (colors.dark.subtleColor) : (colors.dark.defaultColor);
     case ForegroundColor::Good:
-        return (isSubtle) ? (foregroundColors.good.subtleColor) : (foregroundColors.good.defaultColor);
+        return (isSubtle) ? (colors.good.subtleColor) : (colors.good.defaultColor);
     case ForegroundColor::Light:
-        return (isSubtle) ? (foregroundColors.light.subtleColor) : (foregroundColors.light.defaultColor);
+        return (isSubtle) ? (colors.light.subtleColor) : (colors.light.defaultColor);
     case ForegroundColor::Warning:
-        return (isSubtle) ? (foregroundColors.warning.subtleColor) : (foregroundColors.warning.defaultColor);
+        return (isSubtle) ? (colors.warning.subtleColor) : (colors.warning.defaultColor);
     case ForegroundColor::Default:
     default:
-        return (isSubtle) ? (foregroundColors.defaultColor.subtleColor) : (foregroundColors.defaultColor.defaultColor);
+        return (isSubtle) ? (colors.defaultColor.subtleColor) : (colors.defaultColor.defaultColor);
     }
+}
+
+std::string HostConfig::GetForegroundColor(ContainerStyle style, ForegroundColor color, bool isSubtle) const
+{
+    auto foregroundColors = GetContainerStyle(style).foregroundColors;
+    return GetContainerColor(foregroundColors, color, isSubtle);
+}
+
+std::string HostConfig::GetHighlightColor(ContainerStyle style, ForegroundColor color, bool isSubtle) const
+{
+    auto highlightColors = GetContainerStyle(style).highlightColors;
+    return GetContainerColor(highlightColors, color, isSubtle);
 }
 
 std::string HostConfig::GetBorderColor(ContainerStyle style) const

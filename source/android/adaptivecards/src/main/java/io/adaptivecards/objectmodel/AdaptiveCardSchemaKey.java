@@ -64,6 +64,8 @@ public enum AdaptiveCardSchemaKey {
   ForegroundColors,
   Good,
   Height,
+  Highlight,
+  HighlightColors,
   HorizontalAlignment,
   IconPlacement,
   IconSize,

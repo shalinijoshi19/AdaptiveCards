@@ -359,6 +359,7 @@ namespace AdaptiveSharedNamespace
 
         std::string GetBackgroundColor(ContainerStyle style) const;
         std::string GetForegroundColor(ContainerStyle style, ForegroundColor color, bool isSubtle) const;
+        std::string GetHighlightColor(ContainerStyle style, ForegroundColor color, bool isSubtle) const;
         std::string GetBorderColor(ContainerStyle style) const;
         unsigned int GetBorderThickness(ContainerStyle style) const;
 
@@ -412,6 +413,7 @@ namespace AdaptiveSharedNamespace
 
     private:
         const ContainerStyleDefinition& GetContainerStyle(ContainerStyle style) const;
+        std::string GetContainerColor(const ColorsConfig& colors, ForegroundColor color, bool isSubtle) const;
 
         std::string _fontFamily;
         FontSizesConfig _fontSizes;
