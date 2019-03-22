@@ -6,6 +6,7 @@
 #include "AdaptiveCardResourceResolvers.h"
 #include "AdaptiveColorsConfig.h"
 #include "AdaptiveColorConfig.h"
+#include "AdaptiveContainer.h"
 #include "AdaptiveHostConfig.h"
 #include "AdaptiveImage.h"
 #include "AdaptiveRenderArgs.h"
@@ -2427,8 +2428,12 @@ namespace AdaptiveNamespace
         ComPtr<IAdaptiveHostConfig> hostConfig;
         RETURN_IF_FAILED(renderContext->get_HostConfig(&hostConfig));
 
-        boolean bleed;
-        RETURN_IF_FAILED(adaptiveContainer->get_Bleed(&bleed));
+        ComPtr<IAdaptiveSpacingConfig> spacingConfig;
+        RETURN_IF_FAILED(hostConfig->get_Spacing(&spacingConfig));
+
+        UINT32 padding;
+        RETURN_IF_FAILED(spacingConfig->get_Padding(&padding));
+        DOUBLE paddingAsDouble = static_cast<DOUBLE>(padding);
 
         // If container style was explicitly assigned, apply background
         if (hasExplicitContainerStyle)
@@ -2438,19 +2443,27 @@ namespace AdaptiveNamespace
             ComPtr<IBrush> backgroundColorBrush = GetSolidColorBrush(backgroundColor);
             RETURN_IF_FAILED(containerBorder->put_Background(backgroundColorBrush.Get()));
 
-            // If the container style doesn't match its parent, and we're not bleeding, apply padding.
-            if (containerStyle != parentContainerStyle && !bleed)
+            // If the container style doesn't match its parent apply padding.
+            if (containerStyle != parentContainerStyle)
             {
-                ComPtr<IAdaptiveSpacingConfig> spacingConfig;
-                RETURN_IF_FAILED(hostConfig->get_Spacing(&spacingConfig));
-
-                UINT32 padding;
-                RETURN_IF_FAILED(spacingConfig->get_Padding(&padding));
-                DOUBLE paddingAsDouble = static_cast<DOUBLE>(padding);
-
                 Thickness paddingThickness = {paddingAsDouble, paddingAsDouble, paddingAsDouble, paddingAsDouble};
                 RETURN_IF_FAILED(containerBorder->put_Padding(paddingThickness));
             }
+        }
+
+        ComPtr<AdaptiveNamespace::AdaptiveContainer> containerImpl =
+            PeekInnards<AdaptiveNamespace::AdaptiveContainer>(adaptiveContainer);
+
+        boolean bleed;
+        RETURN_IF_FAILED(containerImpl->get_CanBleed(&bleed));
+
+        if (bleed)
+        {
+            Thickness marginThickness = {-paddingAsDouble, 0, -paddingAsDouble, 0};
+
+            ComPtr<IFrameworkElement> containerBorderAsFrameworkElement;
+            RETURN_IF_FAILED(containerBorder.As(&containerBorderAsFrameworkElement));
+            RETURN_IF_FAILED(containerBorderAsFrameworkElement->put_Margin(marginThickness));
         }
 
         ABI::AdaptiveNamespace::VerticalContentAlignment verticalContentAlignment;
@@ -2656,18 +2669,18 @@ namespace AdaptiveNamespace
             }
 
             // If the container style doesn't match its parent, and we're not bleeding, apply padding.
-            if (containerStyle != parentContainerStyle && !bleed)
-            {
-                ComPtr<IAdaptiveSpacingConfig> spacingConfig;
-                RETURN_IF_FAILED(hostConfig->get_Spacing(&spacingConfig));
+            // if (containerStyle != parentContainerStyle && !bleed)
+            //{
+            //    ComPtr<IAdaptiveSpacingConfig> spacingConfig;
+            //    RETURN_IF_FAILED(hostConfig->get_Spacing(&spacingConfig));
 
-                UINT32 padding;
-                RETURN_IF_FAILED(spacingConfig->get_Padding(&padding));
-                DOUBLE paddingAsDouble = static_cast<DOUBLE>(padding);
+            //    UINT32 padding;
+            //    RETURN_IF_FAILED(spacingConfig->get_Padding(&padding));
+            //    DOUBLE paddingAsDouble = static_cast<DOUBLE>(padding);
 
-                Thickness paddingThickness = {paddingAsDouble, paddingAsDouble, paddingAsDouble, paddingAsDouble};
-                RETURN_IF_FAILED(containerBorder->put_Padding(paddingThickness));
-            }
+            //    Thickness paddingThickness = {paddingAsDouble, paddingAsDouble, paddingAsDouble, paddingAsDouble};
+            //    RETURN_IF_FAILED(containerBorder->put_Padding(paddingThickness));
+            //}
         }
 
         ComPtr<IGrid> xamlGrid =
