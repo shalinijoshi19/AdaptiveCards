@@ -35,6 +35,7 @@ namespace AdaptiveNamespace
         m_style = static_cast<ABI::AdaptiveNamespace::ContainerStyle>(sharedContainer->GetStyle());
         m_verticalAlignment =
             static_cast<ABI::AdaptiveNamespace::VerticalContentAlignment>(sharedContainer->GetVerticalContentAlignment());
+        m_bleed = sharedContainer->GetBleed();
 
         auto backgroundImage = sharedContainer->GetBackgroundImage();
         if (backgroundImage != nullptr && !backgroundImage->GetUrl().empty())
@@ -104,6 +105,18 @@ namespace AdaptiveNamespace
         return S_OK;
     }
 
+    HRESULT AdaptiveContainer::get_Bleed(_Out_ boolean* isSubtle)
+    {
+        *isSubtle = m_bleed;
+        return S_OK;
+    }
+
+    HRESULT AdaptiveContainer::put_Bleed(boolean isSubtle)
+    {
+        m_bleed = isSubtle;
+        return S_OK;
+    }
+
     HRESULT AdaptiveContainer::GetSharedModel(std::shared_ptr<AdaptiveSharedNamespace::BaseCardElement>& sharedModel) try
     {
         std::shared_ptr<AdaptiveSharedNamespace::Container> container = std::make_shared<AdaptiveSharedNamespace::Container>();
@@ -125,6 +138,8 @@ namespace AdaptiveNamespace
         {
             container->SetBackgroundImage(sharedBackgroundImage);
         }
+
+        container->SetBleed(m_bleed);
 
         GenerateSharedElements(m_items.Get(), container->GetItems());
 

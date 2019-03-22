@@ -16,7 +16,10 @@ using namespace ABI::Windows::UI::Xaml::Controls;
 
 namespace AdaptiveNamespace
 {
-    AdaptiveColumnSet::AdaptiveColumnSet() { m_columns = Microsoft::WRL::Make<Vector<ABI::AdaptiveNamespace::AdaptiveColumn*>>(); }
+    AdaptiveColumnSet::AdaptiveColumnSet()
+    {
+        m_columns = Microsoft::WRL::Make<Vector<ABI::AdaptiveNamespace::AdaptiveColumn*>>();
+    }
 
     HRESULT AdaptiveColumnSet::RuntimeClassInitialize() noexcept try
     {
@@ -36,6 +39,7 @@ namespace AdaptiveNamespace
         GenerateActionProjection(sharedColumnSet->GetSelectAction(), &m_selectAction);
 
         m_style = static_cast<ABI::AdaptiveNamespace::ContainerStyle>(sharedColumnSet->GetStyle());
+        m_bleed = sharedColumnSet->GetBleed();
 
         InitializeBaseElement(std::static_pointer_cast<BaseCardElement>(sharedColumnSet));
 
@@ -68,6 +72,18 @@ namespace AdaptiveNamespace
     HRESULT AdaptiveColumnSet::put_Style(ABI::AdaptiveNamespace::ContainerStyle style)
     {
         m_style = style;
+        return S_OK;
+    }
+
+    HRESULT AdaptiveColumnSet::get_Bleed(_Out_ boolean* isSubtle)
+    {
+        *isSubtle = m_bleed;
+        return S_OK;
+    }
+
+    HRESULT AdaptiveColumnSet::put_Bleed(boolean isSubtle)
+    {
+        m_bleed = isSubtle;
         return S_OK;
     }
 
@@ -108,6 +124,7 @@ namespace AdaptiveNamespace
         });
 
         columnSet->SetStyle(static_cast<AdaptiveSharedNamespace::ContainerStyle>(m_style));
+        columnSet->SetBleed(m_bleed);
 
         sharedModel = columnSet;
         return S_OK;

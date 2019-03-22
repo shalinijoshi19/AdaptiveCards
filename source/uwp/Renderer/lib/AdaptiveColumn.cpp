@@ -31,6 +31,7 @@ namespace AdaptiveNamespace
         m_style = static_cast<ABI::AdaptiveNamespace::ContainerStyle>(sharedColumn->GetStyle());
         m_verticalAlignment =
             static_cast<ABI::AdaptiveNamespace::VerticalContentAlignment>(sharedColumn->GetVerticalContentAlignment());
+        m_bleed = sharedColumn->GetBleed();
 
         RETURN_IF_FAILED(UTF8ToHString(sharedColumn->GetWidth(), m_width.GetAddressOf()));
         m_pixelWidth = sharedColumn->GetPixelWidth();
@@ -111,6 +112,18 @@ namespace AdaptiveNamespace
         return S_OK;
     }
 
+    HRESULT AdaptiveColumn::get_Bleed(_Out_ boolean* isSubtle)
+    {
+        *isSubtle = m_bleed;
+        return S_OK;
+    }
+
+    HRESULT AdaptiveColumn::put_Bleed(boolean isSubtle)
+    {
+        m_bleed = isSubtle;
+        return S_OK;
+    }
+
     HRESULT AdaptiveColumn::get_ElementType(_Out_ ElementType* elementType)
     {
         *elementType = ElementType::Column;
@@ -126,6 +139,7 @@ namespace AdaptiveNamespace
         column->SetVerticalContentAlignment(static_cast<AdaptiveSharedNamespace::VerticalContentAlignment>(m_verticalAlignment));
         column->SetWidth(HStringToUTF8(m_width.Get()));
         column->SetPixelWidth(m_pixelWidth);
+        column->SetBleed(m_bleed);
 
         ComPtr<AdaptiveBackgroundImage> adaptiveBackgroundImage = PeekInnards<AdaptiveBackgroundImage>(m_backgroundImage);
         std::shared_ptr<AdaptiveSharedNamespace::BackgroundImage> sharedBackgroundImage;

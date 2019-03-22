@@ -31,6 +31,9 @@ namespace AdaptiveNamespace
         IFACEMETHODIMP get_Style(_Out_ ABI::AdaptiveNamespace::ContainerStyle* style);
         IFACEMETHODIMP put_Style(ABI::AdaptiveNamespace::ContainerStyle style);
 
+        IFACEMETHODIMP get_Bleed(_Out_ boolean* bleed);
+        IFACEMETHODIMP put_Bleed(boolean bleed);
+
         // IAdaptiveCardElement
         IFACEMETHODIMP get_ElementType(_Out_ ABI::AdaptiveNamespace::ElementType* elementType);
 
@@ -120,6 +123,7 @@ namespace AdaptiveNamespace
         Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveColumn*>> m_columns;
         Microsoft::WRL::ComPtr<ABI::AdaptiveNamespace::IAdaptiveActionElement> m_selectAction;
         ABI::AdaptiveNamespace::ContainerStyle m_style;
+        boolean m_bleed;
     };
 
     ActivatableClass(AdaptiveColumnSet);

@@ -39,6 +39,9 @@ namespace AdaptiveNamespace
         IFACEMETHODIMP get_BackgroundImage(_Outptr_ ABI::AdaptiveNamespace::IAdaptiveBackgroundImage** backgroundImage);
         IFACEMETHODIMP put_BackgroundImage(_In_ ABI::AdaptiveNamespace::IAdaptiveBackgroundImage* backgroundImage);
 
+        IFACEMETHODIMP get_Bleed(_Out_ boolean* bleed);
+        IFACEMETHODIMP put_Bleed(boolean bleed);
+
         // IAdaptiveCardElement
         IFACEMETHODIMP get_ElementType(_Out_ ABI::AdaptiveNamespace::ElementType* elementType);
 
@@ -130,6 +133,7 @@ namespace AdaptiveNamespace
         ABI::AdaptiveNamespace::ContainerStyle m_style;
         ABI::AdaptiveNamespace::VerticalContentAlignment m_verticalAlignment;
         Microsoft::WRL::ComPtr<ABI::AdaptiveNamespace::IAdaptiveBackgroundImage> m_backgroundImage;
+        boolean m_bleed;
     };
 
     ActivatableClass(AdaptiveContainer);
