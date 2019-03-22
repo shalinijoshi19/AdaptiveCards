@@ -883,7 +883,7 @@ HRESULT GetColorFromAdaptiveColor(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConf
     GetContainerStyleDefinition(containerStyle, hostConfig, &styleDefinition);
 
     ComPtr<ABI::AdaptiveNamespace::IAdaptiveColorsConfig> colorsConfig;
-    if (!highlightColor)
+    if (highlightColor)
     {
         RETURN_IF_FAILED(styleDefinition->get_HighlightColors(&colorsConfig));
     }

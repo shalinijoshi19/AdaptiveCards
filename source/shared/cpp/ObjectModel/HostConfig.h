@@ -171,7 +171,29 @@ namespace AdaptiveSharedNamespace
 
     struct ContainerStylesDefinition
     {
-        ContainerStyleDefinition defaultPalette;
+        ContainerStyleDefinition defaultPalette = {"#FFFFFFFF",
+                                                   "#FF7F7F7F7F",
+                                                   0,
+                                                   {
+                                                       // Foreground Colors
+                                                       {"#FF000000", "#B2000000"}, // defaultColor
+                                                       {"#FF0000FF", "#B20000FF"}, // accent
+                                                       {"#FF101010", "#B2101010"}, // dark
+                                                       {"#FFFFFFFF", "#B2FFFFFF"}, // light
+                                                       {"#FF008000", "#B2008000"}, // good
+                                                       {"#FFFFD700", "#B2FFD700"}, // warning
+                                                       {"#FF8B0000", "#B28B0000"}  // attention
+                                                   },
+                                                   {
+                                                       // Highlight Colors
+                                                       {"#FFFFFF00", "#FFFFFFE0"}, // defaultColor
+                                                       {"#FFFFFF00", "#FFFFFFE0"}, // accent
+                                                       {"#FFFFFF00", "#FFFFFFE0"}, // dark
+                                                       {"#FFFFFF00", "#FFFFFFE0"}, // light
+                                                       {"#FFFFFF00", "#FFFFFFE0"}, // good
+                                                       {"#FFFFFF00", "#FFFFFFE0"}, // warning
+                                                       {"#FFFFFF00", "#FFFFFFE0"}  // attention
+                                                   }};
         ContainerStyleDefinition emphasisPalette = {"#08000000",
                                                     "#08000000",
                                                     0,
