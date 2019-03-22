@@ -11,7 +11,9 @@
 #include <Column.h>
 #include <Fact.h>
 #include <Image.h>
+#include <Inline.h>
 #include <MediaSource.h>
+#include <Paragraph.h>
 #include <ToggleVisibilityTarget.h>
 #include <windows.foundation.collections.h>
 #include <ParseContext.h>
@@ -48,11 +50,17 @@ HRESULT GetColorFromAdaptiveColor(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConf
                                   ABI::AdaptiveNamespace::ForegroundColor adaptiveColor,
                                   ABI::AdaptiveNamespace::ContainerStyle containerStyle,
                                   bool isSubtle,
+                                  bool highlightColor,
                                   _Out_ ABI::Windows::UI::Color* uiColor) noexcept;
 
 HRESULT GetBackgroundColorFromStyle(ABI::AdaptiveNamespace::ContainerStyle style,
                                     _In_ ABI::AdaptiveNamespace::IAdaptiveHostConfig* hostConfig,
                                     _Out_ ABI::Windows::UI::Color* backgroundColor) noexcept;
+
+HRESULT GetHighlighter(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adaptiveTextElement,
+                       _In_ ABI::AdaptiveNamespace::IAdaptiveRenderContext* renderContext,
+                       _In_ ABI::AdaptiveNamespace::IAdaptiveRenderArgs* renderArgs,
+                       _Out_ ABI::Windows::UI::Xaml::Documents::ITextHighlighter** textHighlighter) noexcept;
 
 HRESULT GetFontDataFromStyle(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConfig* hostConfig,
                              ABI::AdaptiveNamespace::FontStyle style,
@@ -92,7 +100,8 @@ HRESULT GetSpacingSizeFromSpacing(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConf
                                   ABI::AdaptiveNamespace::Spacing spacing,
                                   _Out_ UINT* spacingSize) noexcept;
 
-HRESULT GenerateSharedElement(_In_ ABI::AdaptiveNamespace::IAdaptiveCardElement* items, std::shared_ptr<AdaptiveSharedNamespace::BaseCardElement>& containedElement);
+HRESULT GenerateSharedElement(_In_ ABI::AdaptiveNamespace::IAdaptiveCardElement* items,
+                              std::shared_ptr<AdaptiveSharedNamespace::BaseCardElement>& containedElement);
 
 HRESULT GenerateSharedElements(_In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::IAdaptiveCardElement*>* items,
                                std::vector<std::shared_ptr<AdaptiveSharedNamespace::BaseCardElement>>& containedElements);
@@ -114,6 +123,12 @@ HRESULT GenerateSharedChoices(_In_ ABI::Windows::Foundation::Collections::IVecto
 
 HRESULT GenerateSharedMediaSources(_In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveMediaSource*>* items,
                                    std::vector<std::shared_ptr<AdaptiveSharedNamespace::MediaSource>>& containedElements);
+
+HRESULT GenerateSharedInlines(_In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::IAdaptiveInline*>* items,
+                              std::vector<std::shared_ptr<AdaptiveSharedNamespace::Inline>>& containedElements);
+
+HRESULT GenerateSharedParagraphs(_In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveParagraph*>* items,
+                                 std::vector<std::shared_ptr<AdaptiveSharedNamespace::Paragraph>>& containedElements);
 
 HRESULT GenerateSharedToggleElements(
     _In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveToggleVisibilityTarget*>* items,
@@ -138,6 +153,13 @@ HRESULT GenerateColumnsProjection(const std::vector<std::shared_ptr<AdaptiveShar
 
 HRESULT GenerateFactsProjection(const std::vector<std::shared_ptr<AdaptiveSharedNamespace::Fact>>& containedElements,
                                 _In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveFact*>* projectedParentContainer) noexcept;
+
+HRESULT GenerateInlinesProjection(const std::vector<std::shared_ptr<AdaptiveSharedNamespace::Inline>>& containedElements,
+                                  _In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::IAdaptiveInline*>* projectedParentContainer) noexcept;
+
+HRESULT GenerateParagraphsProjection(
+    const std::vector<std::shared_ptr<AdaptiveSharedNamespace::Paragraph>>& containedElements,
+    _In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveParagraph*>* projectedParentContainer) noexcept;
 
 HRESULT GenerateImagesProjection(const std::vector<std::shared_ptr<AdaptiveSharedNamespace::Image>>& containedElements,
                                  _In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveImage*>* projectedParentContainer) noexcept;
@@ -265,6 +287,8 @@ namespace AdaptiveNamespace
                                            Make<AdaptiveNamespace::AdaptiveToggleInputRenderer>().Get()));
         RETURN_IF_FAILED(
             registration->Set(HStringReference(L"Media").Get(), Make<AdaptiveNamespace::AdaptiveMediaRenderer>().Get()));
+        RETURN_IF_FAILED(registration->Set(HStringReference(L"RichTextBlock").Get(),
+                                           Make<AdaptiveNamespace::AdaptiveRichTextBlockRenderer>().Get()));
         RETURN_IF_FAILED(registration->Set(HStringReference(L"TextBlock").Get(),
                                            Make<AdaptiveNamespace::AdaptiveTextBlockRenderer>().Get()));
 

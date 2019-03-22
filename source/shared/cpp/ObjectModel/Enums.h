@@ -61,6 +61,8 @@ namespace AdaptiveSharedNamespace
         ForegroundColors,
         Good,
         Height,
+        Highlight,
+        HighlightColors,
         HorizontalAlignment,
         IconPlacement,
         IconSize,

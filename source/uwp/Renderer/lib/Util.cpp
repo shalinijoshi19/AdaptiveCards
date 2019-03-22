@@ -19,11 +19,14 @@
 #include "AdaptiveMediaSource.h"
 #include "AdaptiveNumberInput.h"
 #include "AdaptiveOpenUrlAction.h"
+#include "AdaptiveParagraph.h"
+#include "AdaptiveRichTextBlock.h"
 #include "AdaptiveSeparator.h"
 #include "AdaptiveShowCardAction.h"
 #include "AdaptiveSubmitAction.h"
 #include "AdaptiveTextBlock.h"
 #include "AdaptiveTextInput.h"
+#include "AdaptiveTextRun.h"
 #include "AdaptiveTimeInput.h"
 #include "AdaptiveToggleInput.h"
 #include "AdaptiveToggleVisibilityTarget.h"
@@ -37,6 +40,7 @@
 #include "util.h"
 #include <windows.foundation.collections.h>
 #include "XamlHelpers.h"
+#include "XamlBuilder.h"
 
 using namespace AdaptiveCards;
 using namespace Microsoft::WRL;
@@ -159,6 +163,11 @@ HRESULT GenerateSharedElement(_In_ ABI::AdaptiveNamespace::IAdaptiveCardElement*
     case ABI::AdaptiveNamespace::ElementType::Media:
         baseCardElement =
             GetSharedModel<AdaptiveSharedNamespace::BaseCardElement, ABI::AdaptiveNamespace::IAdaptiveCardElement, AdaptiveNamespace::AdaptiveMedia>(
+                item);
+        break;
+    case ABI::AdaptiveNamespace::ElementType::RichTextBlock:
+        baseCardElement =
+            GetSharedModel<AdaptiveSharedNamespace::BaseCardElement, ABI::AdaptiveNamespace::IAdaptiveCardElement, AdaptiveNamespace::AdaptiveRichTextBlock>(
                 item);
         break;
     case ABI::AdaptiveNamespace::ElementType::TextBlock:
@@ -374,6 +383,52 @@ HRESULT GenerateSharedMediaSources(_In_ ABI::Windows::Foundation::Collections::I
     return S_OK;
 }
 
+HRESULT GenerateSharedInlines(ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::IAdaptiveInline*>* inlines,
+                              std::vector<std::shared_ptr<AdaptiveSharedNamespace::Inline>>& containedElements)
+{
+    containedElements.clear();
+
+    XamlHelpers::IterateOverVector<ABI::AdaptiveNamespace::IAdaptiveInline, ABI::AdaptiveNamespace::IAdaptiveInline>(
+        inlines, [&](ABI::AdaptiveNamespace::IAdaptiveInline* thisInline) {
+            // We only support text runs for now
+            ComPtr<AdaptiveNamespace::AdaptiveTextRun> adaptiveTextRun = PeekInnards<AdaptiveNamespace::AdaptiveTextRun>(thisInline);
+            if (adaptiveTextRun == nullptr)
+            {
+                return E_INVALIDARG;
+            }
+
+            std::shared_ptr<AdaptiveSharedNamespace::TextRun> sharedTextRun;
+            RETURN_IF_FAILED(adaptiveTextRun->GetSharedModel(sharedTextRun));
+            containedElements.push_back(std::AdaptivePointerCast<AdaptiveSharedNamespace::Inline>(sharedTextRun));
+            return S_OK;
+        });
+
+    return S_OK;
+}
+
+HRESULT GenerateSharedParagraphs(ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveParagraph*>* paragraphs,
+                                 std::vector<std::shared_ptr<AdaptiveSharedNamespace::Paragraph>>& containedElements)
+{
+    containedElements.clear();
+
+    XamlHelpers::IterateOverVector<ABI::AdaptiveNamespace::AdaptiveParagraph, ABI::AdaptiveNamespace::IAdaptiveParagraph>(
+        paragraphs, [&](ABI::AdaptiveNamespace::IAdaptiveParagraph* paragraph) {
+            ComPtr<AdaptiveNamespace::AdaptiveParagraph> adaptiveElement =
+                PeekInnards<AdaptiveNamespace::AdaptiveParagraph>(paragraph);
+            if (adaptiveElement == nullptr)
+            {
+                return E_INVALIDARG;
+            }
+
+            std::shared_ptr<AdaptiveSharedNamespace::Paragraph> sharedParagraph;
+            RETURN_IF_FAILED(adaptiveElement->GetSharedModel(sharedParagraph));
+            containedElements.push_back(std::AdaptivePointerCast<AdaptiveSharedNamespace::Paragraph>(sharedParagraph));
+            return S_OK;
+        });
+
+    return S_OK;
+}
+
 HRESULT GenerateSharedToggleElements(
     _In_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveToggleVisibilityTarget*>* targets,
     std::vector<std::shared_ptr<AdaptiveSharedNamespace::ToggleVisibilityTarget>>& containedElements)
@@ -472,7 +527,11 @@ HRESULT GenerateElementProjection(_In_ const std::shared_ptr<AdaptiveSharedNames
         break;
     case CardElementType::ActionSet:
         RETURN_IF_FAILED(MakeAndInitialize<::AdaptiveNamespace::AdaptiveActionSet>(
-            projectedElement, std::AdaptivePointerCast<AdaptiveCards::ActionSet>(baseElement)));
+            projectedElement, std::AdaptivePointerCast<AdaptiveSharedNamespace::ActionSet>(baseElement)));
+        break;
+    case CardElementType::RichTextBlock:
+        RETURN_IF_FAILED(MakeAndInitialize<::AdaptiveNamespace::AdaptiveRichTextBlock>(
+            projectedElement, std::AdaptivePointerCast<AdaptiveSharedNamespace::RichTextBlock>(baseElement)));
         break;
     case CardElementType::Custom:
         RETURN_IF_FAILED(std::AdaptivePointerCast<::AdaptiveNamespace::CustomElementWrapper>(baseElement)->GetWrappedElement(projectedElement));
@@ -586,6 +645,43 @@ HRESULT GenerateFactsProjection(const std::vector<std::shared_ptr<AdaptiveShared
         ComPtr<ABI::AdaptiveNamespace::IAdaptiveFact> projectedContainedElement;
         RETURN_IF_FAILED(MakeAndInitialize<::AdaptiveNamespace::AdaptiveFact>(
             &projectedContainedElement, std::static_pointer_cast<AdaptiveSharedNamespace::Fact>(containedElement)));
+
+        RETURN_IF_FAILED(projectedParentContainer->Append(projectedContainedElement.Detach()));
+    }
+    return S_OK;
+}
+CATCH_RETURN;
+
+HRESULT GenerateInlinesProjection(const std::vector<std::shared_ptr<AdaptiveSharedNamespace::Inline>>& containedElements,
+                                  ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::IAdaptiveInline*>* projectedParentContainer) noexcept try
+{
+    for (auto& containedElement : containedElements)
+    {
+        // Only support text runs for now
+        if (containedElement->GetInlineType() != InlineElementType::TextRun)
+        {
+            return E_NOTIMPL;
+        }
+
+        ComPtr<ABI::AdaptiveNamespace::IAdaptiveInline> projectedContainedElement;
+        RETURN_IF_FAILED(MakeAndInitialize<::AdaptiveNamespace::AdaptiveTextRun>(
+            &projectedContainedElement, std::static_pointer_cast<AdaptiveSharedNamespace::TextRun>(containedElement)));
+
+        RETURN_IF_FAILED(projectedParentContainer->Append(projectedContainedElement.Detach()));
+    }
+    return S_OK;
+}
+CATCH_RETURN;
+
+HRESULT GenerateParagraphsProjection(
+    const std::vector<std::shared_ptr<AdaptiveSharedNamespace::Paragraph>>& containedElements,
+    ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveParagraph*>* projectedParentContainer) noexcept try
+{
+    for (auto& containedElement : containedElements)
+    {
+        ComPtr<ABI::AdaptiveNamespace::IAdaptiveParagraph> projectedContainedElement;
+        RETURN_IF_FAILED(MakeAndInitialize<::AdaptiveNamespace::AdaptiveParagraph>(
+            &projectedContainedElement, std::static_pointer_cast<AdaptiveSharedNamespace::Paragraph>(containedElement)));
 
         RETURN_IF_FAILED(projectedParentContainer->Append(projectedContainedElement.Detach()));
     }
@@ -780,13 +876,21 @@ HRESULT GetColorFromAdaptiveColor(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConf
                                   ABI::AdaptiveNamespace::ForegroundColor adaptiveColor,
                                   ABI::AdaptiveNamespace::ContainerStyle containerStyle,
                                   bool isSubtle,
+                                  bool highlightColor,
                                   _Out_ ABI::Windows::UI::Color* uiColor) noexcept try
 {
     ComPtr<ABI::AdaptiveNamespace::IAdaptiveContainerStyleDefinition> styleDefinition;
     GetContainerStyleDefinition(containerStyle, hostConfig, &styleDefinition);
 
     ComPtr<ABI::AdaptiveNamespace::IAdaptiveColorsConfig> colorsConfig;
-    RETURN_IF_FAILED(styleDefinition->get_ForegroundColors(&colorsConfig));
+    if (highlightColor)
+    {
+        RETURN_IF_FAILED(styleDefinition->get_HighlightColors(&colorsConfig));
+    }
+    else
+    {
+        RETURN_IF_FAILED(styleDefinition->get_ForegroundColors(&colorsConfig));
+    }
 
     ComPtr<ABI::AdaptiveNamespace::IAdaptiveColorConfig> colorConfig;
     switch (adaptiveColor)
@@ -820,6 +924,40 @@ HRESULT GetColorFromAdaptiveColor(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConf
     return S_OK;
 }
 CATCH_RETURN;
+
+HRESULT GetHighlighter(_In_ ABI::AdaptiveNamespace::IAdaptiveTextElement* adaptiveTextElement,
+                       _In_ ABI::AdaptiveNamespace::IAdaptiveRenderContext* renderContext,
+                       _In_ ABI::AdaptiveNamespace::IAdaptiveRenderArgs* renderArgs,
+                       _Out_ ABI::Windows::UI::Xaml::Documents::ITextHighlighter** textHighlighter) noexcept
+{
+    ComPtr<ABI::Windows::UI::Xaml::Documents::ITextHighlighter> localTextHighlighter =
+        XamlHelpers::CreateXamlClass<ABI::Windows::UI::Xaml::Documents::ITextHighlighter>(
+            HStringReference(RuntimeClass_Windows_UI_Xaml_Documents_TextHighlighter));
+
+    ComPtr<ABI::AdaptiveNamespace::IAdaptiveHostConfig> hostConfig;
+    RETURN_IF_FAILED(renderContext->get_HostConfig(&hostConfig));
+
+    ABI::AdaptiveNamespace::ForegroundColor adaptiveForegroundColor;
+    RETURN_IF_FAILED(adaptiveTextElement->get_Color(&adaptiveForegroundColor));
+
+    boolean isSubtle;
+    RETURN_IF_FAILED(adaptiveTextElement->get_IsSubtle(&isSubtle));
+
+    ABI::AdaptiveNamespace::ContainerStyle containerStyle;
+    RETURN_IF_FAILED(renderArgs->get_ContainerStyle(&containerStyle));
+
+    ABI::Windows::UI::Color backgroundColor;
+    RETURN_IF_FAILED(GetColorFromAdaptiveColor(hostConfig.Get(), adaptiveForegroundColor, containerStyle, isSubtle, true, &backgroundColor));
+
+    ABI::Windows::UI::Color foregroundColor;
+    RETURN_IF_FAILED(GetColorFromAdaptiveColor(hostConfig.Get(), adaptiveForegroundColor, containerStyle, isSubtle, false, &foregroundColor));
+
+    RETURN_IF_FAILED(localTextHighlighter->put_Background(XamlBuilder::GetSolidColorBrush(backgroundColor).Get()));
+    RETURN_IF_FAILED(localTextHighlighter->put_Foreground(XamlBuilder::GetSolidColorBrush(foregroundColor).Get()));
+
+    localTextHighlighter.CopyTo(textHighlighter);
+    return S_OK;
+}
 
 HRESULT GetSpacingSizeFromSpacing(_In_ ABI::AdaptiveNamespace::IAdaptiveHostConfig* hostConfig,
                                   ABI::AdaptiveNamespace::Spacing spacing,

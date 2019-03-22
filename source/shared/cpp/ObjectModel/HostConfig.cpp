@@ -319,6 +319,9 @@ ContainerStyleDefinition ContainerStyleDefinition::Deserialize(const Json::Value
     result.foregroundColors = ParseUtil::ExtractJsonValueAndMergeWithDefault<ColorsConfig>(
         json, AdaptiveCardSchemaKey::ForegroundColors, defaultValue.foregroundColors, ColorsConfig::Deserialize);
 
+    result.highlightColors = ParseUtil::ExtractJsonValueAndMergeWithDefault<ColorsConfig>(
+        json, AdaptiveCardSchemaKey::HighlightColors, defaultValue.highlightColors, ColorsConfig::Deserialize);
+
     return result;
 }
 
