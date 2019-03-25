@@ -24,6 +24,7 @@ namespace AdaptiveSharedNamespace
         void SetVerticalContentAlignment(const VerticalContentAlignment value);
 
         bool GetPadding() const;
+        void SetPadding(const bool value);
 
         bool GetBleed() const;
         void SetBleed(const bool value);
@@ -66,7 +67,6 @@ namespace AdaptiveSharedNamespace
 
     private:
         void SetCanBleed(const bool value) { m_canBleed = value;}
-        void SetPadding(const bool value);
 
         // Applies padding flag When appropriate
         void ConfigPadding(const AdaptiveCards::ParseContext& context);
