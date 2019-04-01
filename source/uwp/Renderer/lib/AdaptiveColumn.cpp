@@ -14,7 +14,10 @@ using namespace ABI::Windows::UI::Xaml::Controls;
 
 namespace AdaptiveNamespace
 {
-    AdaptiveColumn::AdaptiveColumn() { m_items = Microsoft::WRL::Make<Vector<IAdaptiveCardElement*>>(); }
+    AdaptiveColumn::AdaptiveColumn() : m_bleedDirection(ABI::AdaptiveNamespace::BleedDirection::None)
+    {
+        m_items = Microsoft::WRL::Make<Vector<IAdaptiveCardElement*>>();
+    }
 
     HRESULT AdaptiveColumn::RuntimeClassInitialize() noexcept try
     {
@@ -32,6 +35,11 @@ namespace AdaptiveNamespace
         m_verticalAlignment =
             static_cast<ABI::AdaptiveNamespace::VerticalContentAlignment>(sharedColumn->GetVerticalContentAlignment());
         m_bleed = sharedColumn->GetBleed();
+
+        if (sharedColumn->GetCanBleed())
+        {
+            m_bleedDirection = static_cast<ABI::AdaptiveNamespace::BleedDirection>(sharedColumn->GetBleedDirection());
+        }
 
         RETURN_IF_FAILED(UTF8ToHString(sharedColumn->GetWidth(), m_width.GetAddressOf()));
         m_pixelWidth = sharedColumn->GetPixelWidth();
@@ -124,11 +132,17 @@ namespace AdaptiveNamespace
         return S_OK;
     }
 
-    HRESULT AdaptiveColumn::get_CanBleed(boolean* canBleed)
+    HRESULT AdaptiveColumn::get_BleedDirection(ABI::AdaptiveNamespace::BleedDirection* bleedDirection)
     {
         // TODO: Current behavior is broken because it doesn't update when bleed updates. Unfortunately, neither does
         // the shared model logic.
-        *canBleed = m_canBleed;
+        *bleedDirection = m_bleedDirection;
+        return S_OK;
+    }
+
+    HRESULT AdaptiveColumn::get_ElementType(_Out_ ElementType* elementType)
+    {
+        *elementType = ElementType::Column;
         return S_OK;
     }
 

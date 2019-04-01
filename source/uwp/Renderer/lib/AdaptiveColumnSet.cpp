@@ -16,7 +16,7 @@ using namespace ABI::Windows::UI::Xaml::Controls;
 
 namespace AdaptiveNamespace
 {
-    AdaptiveColumnSet::AdaptiveColumnSet()
+    AdaptiveColumnSet::AdaptiveColumnSet() : m_bleedDirection(ABI::AdaptiveNamespace::BleedDirection::None)
     {
         m_columns = Microsoft::WRL::Make<Vector<ABI::AdaptiveNamespace::AdaptiveColumn*>>();
     }
@@ -40,6 +40,11 @@ namespace AdaptiveNamespace
 
         m_style = static_cast<ABI::AdaptiveNamespace::ContainerStyle>(sharedColumnSet->GetStyle());
         m_bleed = sharedColumnSet->GetBleed();
+
+        if (sharedColumnSet->GetCanBleed())
+        {
+            m_bleedDirection = static_cast<ABI::AdaptiveNamespace::BleedDirection>(sharedColumnSet->GetBleedDirection());
+        }
 
         InitializeBaseElement(std::static_pointer_cast<BaseCardElement>(sharedColumnSet));
 
@@ -87,11 +92,11 @@ namespace AdaptiveNamespace
         return S_OK;
     }
 
-    HRESULT AdaptiveColumnSet::get_CanBleed(boolean* canBleed)
+    HRESULT AdaptiveColumnSet::get_BleedDirection(ABI::AdaptiveNamespace::BleedDirection* bleedDirection)
     {
         // TODO: Current behavior is broken because it doesn't update when bleed updates. Unfortunately, neither does
         // the shared model logic.
-        *canBleed = m_canBleed;
+        *bleedDirection = m_bleedDirection;
         return S_OK;
     }
 

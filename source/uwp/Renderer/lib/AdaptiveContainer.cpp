@@ -14,7 +14,10 @@ using namespace ABI::Windows::UI::Xaml::Controls;
 
 namespace AdaptiveNamespace
 {
-    AdaptiveContainer::AdaptiveContainer() { m_items = Microsoft::WRL::Make<Vector<IAdaptiveCardElement*>>(); }
+    AdaptiveContainer::AdaptiveContainer() : m_bleedDirection(ABI::AdaptiveNamespace::BleedDirection::None)
+    {
+        m_items = Microsoft::WRL::Make<Vector<IAdaptiveCardElement*>>();
+    }
 
     HRESULT AdaptiveContainer::RuntimeClassInitialize() noexcept try
     {
@@ -36,7 +39,11 @@ namespace AdaptiveNamespace
         m_verticalAlignment =
             static_cast<ABI::AdaptiveNamespace::VerticalContentAlignment>(sharedContainer->GetVerticalContentAlignment());
         m_bleed = sharedContainer->GetBleed();
-        m_canBleed = sharedContainer->GetCanBleed();
+
+        if (sharedContainer->GetCanBleed())
+        {
+            m_bleedDirection = static_cast<ABI::AdaptiveNamespace::BleedDirection>(sharedContainer->GetBleedDirection());
+        }
 
         auto backgroundImage = sharedContainer->GetBackgroundImage();
         if (backgroundImage != nullptr && !backgroundImage->GetUrl().empty())
@@ -118,11 +125,11 @@ namespace AdaptiveNamespace
         return S_OK;
     }
 
-    HRESULT AdaptiveContainer::get_CanBleed(boolean* canBleed)
+    HRESULT AdaptiveContainer::get_BleedDirection(ABI::AdaptiveNamespace::BleedDirection* bleedDirection)
     {
         // TODO: Current behavior is broken because it doesn't update when bleed updates. Unfortunately, neither does
         // the shared model logic.
-        *canBleed = m_canBleed;
+        *bleedDirection = m_bleedDirection;
         return S_OK;
     }
 

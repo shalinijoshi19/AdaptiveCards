@@ -6,6 +6,8 @@
 #include "AdaptiveCardResourceResolvers.h"
 #include "AdaptiveColorsConfig.h"
 #include "AdaptiveColorConfig.h"
+#include "AdaptiveColumn.h"
+#include "AdaptiveColumnSet.h"
 #include "AdaptiveContainer.h"
 #include "AdaptiveHostConfig.h"
 #include "AdaptiveImage.h"
@@ -76,7 +78,7 @@ namespace AdaptiveNamespace
         ComPtr<IFrameworkElement> separatorAsFrameworkElement;
         THROW_IF_FAILED(separator.As(&separatorAsFrameworkElement));
 
-        ComPtr<IBrush> lineColorBrush = GetSolidColorBrush(separatorColor);
+        ComPtr<IBrush> lineColorBrush = XamlHelpers::GetSolidColorBrush(separatorColor);
         ComPtr<IPanel> separatorAsPanel;
         THROW_IF_FAILED(separator.As(&separatorAsPanel));
         separatorAsPanel->put_Background(lineColorBrush.Get());
@@ -397,7 +399,7 @@ namespace AdaptiveNamespace
         ABI::Windows::UI::Color backgroundColor;
         if (SUCCEEDED(GetBackgroundColorFromStyle(containerStyle, hostConfig.Get(), &backgroundColor)))
         {
-            ComPtr<IBrush> backgroundColorBrush = GetSolidColorBrush(backgroundColor);
+            ComPtr<IBrush> backgroundColorBrush = XamlHelpers::GetSolidColorBrush(backgroundColor);
             THROW_IF_FAILED(rootAsPanel->put_Background(backgroundColorBrush.Get()));
         }
 
@@ -1765,16 +1767,6 @@ namespace AdaptiveNamespace
         *separatorColor = localColor;
     }
 
-    ComPtr<IBrush> XamlBuilder::GetSolidColorBrush(ABI::Windows::UI::Color color)
-    {
-        ComPtr<ISolidColorBrush> solidColorBrush =
-            XamlHelpers::CreateXamlClass<ISolidColorBrush>(HStringReference(RuntimeClass_Windows_UI_Xaml_Media_SolidColorBrush));
-        THROW_IF_FAILED(solidColorBrush->put_Color(color));
-        ComPtr<IBrush> solidColorBrushAsBrush;
-        THROW_IF_FAILED(solidColorBrush.As(&solidColorBrushAsBrush));
-        return solidColorBrushAsBrush;
-    }
-
     HRESULT XamlBuilder::BuildRichTextBlock(ABI::AdaptiveNamespace::IAdaptiveCardElement* adaptiveCardElement,
                                             ABI::AdaptiveNamespace::IAdaptiveRenderContext* renderContext,
                                             ABI::AdaptiveNamespace::IAdaptiveRenderArgs* renderArgs,
@@ -2189,7 +2181,7 @@ namespace AdaptiveNamespace
                 // Fill the background ellipse with solid color brush
                 ABI::Windows::UI::Color color;
                 RETURN_IF_FAILED(GetColorFromString(HStringToUTF8(backgroundColor), &color));
-                ComPtr<IBrush> backgroundColorBrush = GetSolidColorBrush(color);
+                ComPtr<IBrush> backgroundColorBrush = XamlHelpers::GetSolidColorBrush(color);
                 RETURN_IF_FAILED(backgroundEllipseAsShape->put_Fill(backgroundColorBrush.Get()));
 
                 // Create a grid to contain the background color ellipse and the image ellipse
@@ -2222,7 +2214,7 @@ namespace AdaptiveNamespace
 
                 ABI::Windows::UI::Color color;
                 RETURN_IF_FAILED(GetColorFromString(HStringToUTF8(backgroundColor), &color));
-                ComPtr<IBrush> backgroundColorBrush = GetSolidColorBrush(color);
+                ComPtr<IBrush> backgroundColorBrush = XamlHelpers::GetSolidColorBrush(color);
                 RETURN_IF_FAILED(border->put_Background(backgroundColorBrush.Get()));
 
                 ComPtr<IUIElement> imageAsUiElement;
@@ -2376,6 +2368,81 @@ namespace AdaptiveNamespace
         return S_OK;
     }
 
+    HRESULT HandleStylingAndPadding(_In_ IAdaptiveContainerBase* adaptiveContainerType,
+                                    _In_ IBorder* containerBorder,
+                                    _In_ IAdaptiveRenderContext* renderContext,
+                                    _In_ IAdaptiveRenderArgs* renderArgs,
+                                    _Out_ ABI::AdaptiveNamespace::ContainerStyle* containerStyle)
+    {
+        ABI::AdaptiveNamespace::ContainerStyle localContainerStyle;
+        RETURN_IF_FAILED(adaptiveContainerType->get_Style(&localContainerStyle));
+
+        ABI::AdaptiveNamespace::ContainerStyle parentContainerStyle;
+        RETURN_IF_FAILED(renderArgs->get_ContainerStyle(&parentContainerStyle));
+
+        bool hasExplicitContainerStyle{true};
+        if (localContainerStyle == ABI::AdaptiveNamespace::ContainerStyle::None)
+        {
+            hasExplicitContainerStyle = false;
+            localContainerStyle = parentContainerStyle;
+        }
+
+        ComPtr<IAdaptiveHostConfig> hostConfig;
+        RETURN_IF_FAILED(renderContext->get_HostConfig(&hostConfig));
+
+        ComPtr<IAdaptiveSpacingConfig> spacingConfig;
+        RETURN_IF_FAILED(hostConfig->get_Spacing(&spacingConfig));
+
+        UINT32 padding;
+        RETURN_IF_FAILED(spacingConfig->get_Padding(&padding));
+        DOUBLE paddingAsDouble = static_cast<DOUBLE>(padding);
+
+        // If container style was explicitly assigned, apply background
+        if (hasExplicitContainerStyle)
+        {
+            ABI::Windows::UI::Color backgroundColor;
+            RETURN_IF_FAILED(GetBackgroundColorFromStyle(localContainerStyle, hostConfig.Get(), &backgroundColor));
+            ComPtr<IBrush> backgroundColorBrush = XamlHelpers::GetSolidColorBrush(backgroundColor);
+            RETURN_IF_FAILED(containerBorder->put_Background(backgroundColorBrush.Get()));
+
+            // If the container style doesn't match its parent apply padding.
+            if (localContainerStyle != parentContainerStyle)
+            {
+                Thickness paddingThickness = {paddingAsDouble, paddingAsDouble, paddingAsDouble, paddingAsDouble};
+                RETURN_IF_FAILED(containerBorder->put_Padding(paddingThickness));
+            }
+        }
+
+        Thickness marginThickness = {0};
+
+        ABI::AdaptiveNamespace::BleedDirection bleedDirection;
+        RETURN_IF_FAILED(adaptiveContainerType->get_BleedDirection(&bleedDirection));
+
+        if (bleedDirection != ABI::AdaptiveNamespace::BleedDirection::None)
+        {
+            if (bleedDirection == ABI::AdaptiveNamespace::BleedDirection::Left ||
+                bleedDirection == ABI::AdaptiveNamespace::BleedDirection::Both)
+            {
+                marginThickness.Left = -paddingAsDouble;
+            }
+
+            if (bleedDirection == ABI::AdaptiveNamespace::BleedDirection::Right ||
+                bleedDirection == ABI::AdaptiveNamespace::BleedDirection::Both)
+            {
+                marginThickness.Right = -paddingAsDouble;
+            }
+
+            ComPtr<IBorder> localContainerBorder(containerBorder);
+            ComPtr<IFrameworkElement> containerBorderAsFrameworkElement;
+            RETURN_IF_FAILED(localContainerBorder.As(&containerBorderAsFrameworkElement));
+            RETURN_IF_FAILED(containerBorderAsFrameworkElement->put_Margin(marginThickness));
+        }
+
+        *containerStyle = localContainerStyle;
+
+        return S_OK;
+    }
+
     HRESULT XamlBuilder::BuildContainer(_In_ IAdaptiveCardElement* adaptiveCardElement,
                                         _In_ IAdaptiveRenderContext* renderContext,
                                         _In_ IAdaptiveRenderArgs* renderArgs,
@@ -2399,18 +2466,16 @@ namespace AdaptiveNamespace
             RETURN_IF_FAILED(containerPanelAsFrameWorkElement->put_VerticalAlignment(ABI::Windows::UI::Xaml::VerticalAlignment_Top));
         }
 
+        ComPtr<IBorder> containerBorder =
+            XamlHelpers::CreateXamlClass<IBorder>(HStringReference(RuntimeClass_Windows_UI_Xaml_Controls_Border));
+
+        ComPtr<IAdaptiveContainerBase> containerAsContainerBase;
+        RETURN_IF_FAILED(adaptiveContainer.As(&containerAsContainerBase));
+
         ABI::AdaptiveNamespace::ContainerStyle containerStyle;
-        RETURN_IF_FAILED(adaptiveContainer->get_Style(&containerStyle));
+        RETURN_IF_FAILED(
+            HandleStylingAndPadding(containerAsContainerBase.Get(), containerBorder.Get(), renderContext, renderArgs, &containerStyle));
 
-        ABI::AdaptiveNamespace::ContainerStyle parentContainerStyle;
-        RETURN_IF_FAILED(renderArgs->get_ContainerStyle(&parentContainerStyle));
-
-        bool hasExplicitContainerStyle{true};
-        if (containerStyle == ABI::AdaptiveNamespace::ContainerStyle::None)
-        {
-            hasExplicitContainerStyle = false;
-            containerStyle = parentContainerStyle;
-        }
         ComPtr<IFrameworkElement> parentElement;
         RETURN_IF_FAILED(renderArgs->get_ParentElement(&parentElement));
         ComPtr<IAdaptiveRenderArgs> newRenderArgs;
@@ -2422,49 +2487,6 @@ namespace AdaptiveNamespace
         RETURN_IF_FAILED(adaptiveContainer->get_Items(&childItems));
         RETURN_IF_FAILED(
             BuildPanelChildren(childItems.Get(), containerPanelAsPanel.Get(), renderContext, newRenderArgs.Get(), [](IUIElement*) {}));
-
-        ComPtr<IBorder> containerBorder =
-            XamlHelpers::CreateXamlClass<IBorder>(HStringReference(RuntimeClass_Windows_UI_Xaml_Controls_Border));
-        ComPtr<IAdaptiveHostConfig> hostConfig;
-        RETURN_IF_FAILED(renderContext->get_HostConfig(&hostConfig));
-
-        ComPtr<IAdaptiveSpacingConfig> spacingConfig;
-        RETURN_IF_FAILED(hostConfig->get_Spacing(&spacingConfig));
-
-        UINT32 padding;
-        RETURN_IF_FAILED(spacingConfig->get_Padding(&padding));
-        DOUBLE paddingAsDouble = static_cast<DOUBLE>(padding);
-
-        // If container style was explicitly assigned, apply background
-        if (hasExplicitContainerStyle)
-        {
-            ABI::Windows::UI::Color backgroundColor;
-            RETURN_IF_FAILED(GetBackgroundColorFromStyle(containerStyle, hostConfig.Get(), &backgroundColor));
-            ComPtr<IBrush> backgroundColorBrush = GetSolidColorBrush(backgroundColor);
-            RETURN_IF_FAILED(containerBorder->put_Background(backgroundColorBrush.Get()));
-
-            // If the container style doesn't match its parent apply padding.
-            if (containerStyle != parentContainerStyle)
-            {
-                Thickness paddingThickness = {paddingAsDouble, paddingAsDouble, paddingAsDouble, paddingAsDouble};
-                RETURN_IF_FAILED(containerBorder->put_Padding(paddingThickness));
-            }
-        }
-
-        ComPtr<AdaptiveNamespace::AdaptiveContainer> containerImpl =
-            PeekInnards<AdaptiveNamespace::AdaptiveContainer>(adaptiveContainer);
-
-        boolean bleed;
-        RETURN_IF_FAILED(containerImpl->get_CanBleed(&bleed));
-
-        if (bleed)
-        {
-            Thickness marginThickness = {-paddingAsDouble, 0, -paddingAsDouble, 0};
-
-            ComPtr<IFrameworkElement> containerBorderAsFrameworkElement;
-            RETURN_IF_FAILED(containerBorder.As(&containerBorderAsFrameworkElement));
-            RETURN_IF_FAILED(containerBorderAsFrameworkElement->put_Margin(marginThickness));
-        }
 
         ABI::AdaptiveNamespace::VerticalContentAlignment verticalContentAlignment;
         RETURN_IF_FAILED(adaptiveContainer->get_VerticalContentAlignment(&verticalContentAlignment));
@@ -2507,10 +2529,13 @@ namespace AdaptiveNamespace
             SetStyleFromResourceDictionary(renderContext, L"Adaptive.Container", containerPanelAsFrameWorkElement.Get()));
 
         ComPtr<IAdaptiveActionElement> selectAction;
-        RETURN_IF_FAILED(adaptiveContainer->get_SelectAction(&selectAction));
+        RETURN_IF_FAILED(containerAsContainerBase->get_SelectAction(&selectAction));
 
         ComPtr<IUIElement> containerBorderAsUIElement;
         RETURN_IF_FAILED(containerBorder.As(&containerBorderAsUIElement));
+
+        ComPtr<IAdaptiveHostConfig> hostConfig;
+        RETURN_IF_FAILED(renderContext->get_HostConfig(&hostConfig));
 
         HandleSelectAction(adaptiveCardElement,
                            selectAction.Get(),
@@ -2531,19 +2556,22 @@ namespace AdaptiveNamespace
         ComPtr<IAdaptiveColumn> adaptiveColumn;
         RETURN_IF_FAILED(cardElement.As(&adaptiveColumn));
 
+        ComPtr<IBorder> columnBorder =
+            XamlHelpers::CreateXamlClass<IBorder>(HStringReference(RuntimeClass_Windows_UI_Xaml_Controls_Border));
+
         ComPtr<WholeItemsPanel> columnPanel;
         RETURN_IF_FAILED(MakeAndInitialize<WholeItemsPanel>(&columnPanel));
 
+        ComPtr<IUIElement> columnPanelAsUIElement;
+        RETURN_IF_FAILED(columnPanel.As(&columnPanelAsUIElement));
+
+        RETURN_IF_FAILED(columnBorder->put_Child(columnPanelAsUIElement.Get()));
+
+        ComPtr<IAdaptiveContainerBase> columnAsContainerBase;
+        RETURN_IF_FAILED(adaptiveColumn.As(&columnAsContainerBase));
+
         ABI::AdaptiveNamespace::ContainerStyle containerStyle;
-        RETURN_IF_FAILED(adaptiveColumn->get_Style(&containerStyle));
-        bool hasExplicitContainerStyle = true;
-        if (containerStyle == ABI::AdaptiveNamespace::ContainerStyle::None)
-        {
-            hasExplicitContainerStyle = false;
-            ABI::AdaptiveNamespace::ContainerStyle parentContainerStyle;
-            RETURN_IF_FAILED(renderArgs->get_ContainerStyle(&parentContainerStyle));
-            containerStyle = parentContainerStyle;
-        }
+        RETURN_IF_FAILED(HandleStylingAndPadding(columnAsContainerBase.Get(), columnBorder.Get(), renderContext, renderArgs, &containerStyle));
 
         ComPtr<IFrameworkElement> parentElement;
         RETURN_IF_FAILED(renderArgs->get_ParentElement(&parentElement));
@@ -2552,16 +2580,6 @@ namespace AdaptiveNamespace
 
         ComPtr<IPanel> columnAsPanel;
         THROW_IF_FAILED(columnPanel.As(&columnAsPanel));
-
-        // If container style was explicitly assigned, apply background
-        ComPtr<IAdaptiveHostConfig> hostConfig;
-        RETURN_IF_FAILED(renderContext->get_HostConfig(&hostConfig));
-        ABI::Windows::UI::Color backgroundColor;
-        if (hasExplicitContainerStyle && SUCCEEDED(GetBackgroundColorFromStyle(containerStyle, hostConfig.Get(), &backgroundColor)))
-        {
-            ComPtr<IBrush> backgroundColorBrush = GetSolidColorBrush(backgroundColor);
-            RETURN_IF_FAILED(columnAsPanel->put_Background(backgroundColorBrush.Get()));
-        }
 
         ComPtr<IVector<IAdaptiveCardElement*>> childItems;
         RETURN_IF_FAILED(adaptiveColumn->get_Items(&childItems));
@@ -2582,7 +2600,7 @@ namespace AdaptiveNamespace
         RETURN_IF_FAILED(SetStyleFromResourceDictionary(renderContext, L"Adaptive.Column", columnPanelAsFrameworkElement.Get()));
 
         ComPtr<IAdaptiveActionElement> selectAction;
-        RETURN_IF_FAILED(adaptiveColumn->get_SelectAction(&selectAction));
+        RETURN_IF_FAILED(columnAsContainerBase->get_SelectAction(&selectAction));
 
         // Define columnAsUIElement based on the existence of a backgroundImage
         ComPtr<IUIElement> columnAsUIElement;
@@ -2615,10 +2633,16 @@ namespace AdaptiveNamespace
             RETURN_IF_FAILED(columnPanel.As(&columnAsUIElement));
         }
 
+        ComPtr<IAdaptiveHostConfig> hostConfig;
+        RETURN_IF_FAILED(renderContext->get_HostConfig(&hostConfig));
+
+        ComPtr<IUIElement> columnBorderAsUIElement;
+        RETURN_IF_FAILED(columnBorder.As(&columnBorderAsUIElement));
+
         HandleSelectAction(adaptiveCardElement,
                            selectAction.Get(),
                            renderContext,
-                           columnAsUIElement.Get(),
+                           columnBorderAsUIElement.Get(),
                            SupportsInteractivity(hostConfig.Get()),
                            false,
                            ColumnControl);
@@ -2634,61 +2658,35 @@ namespace AdaptiveNamespace
         ComPtr<IAdaptiveColumnSet> adaptiveColumnSet;
         RETURN_IF_FAILED(cardElement.As(&adaptiveColumnSet));
 
+        ComPtr<IBorder> columnSetBorder =
+            XamlHelpers::CreateXamlClass<IBorder>(HStringReference(RuntimeClass_Windows_UI_Xaml_Controls_Border));
+
         ComPtr<WholeItemsPanel> gridContainer;
         RETURN_IF_FAILED(MakeAndInitialize<WholeItemsPanel>(&gridContainer));
 
+        ComPtr<IUIElement> gridContainerAsUIElement;
+        RETURN_IF_FAILED(gridContainer.As(&gridContainerAsUIElement));
+
+        RETURN_IF_FAILED(columnSetBorder->put_Child(gridContainerAsUIElement.Get()));
+
+        ComPtr<IAdaptiveContainerBase> columnSetAsContainerBase;
+        RETURN_IF_FAILED(adaptiveColumnSet.As(&columnSetAsContainerBase));
+
         ABI::AdaptiveNamespace::ContainerStyle containerStyle;
-        RETURN_IF_FAILED(adaptiveColumnSet->get_Style(&containerStyle));
-        bool hasExplicitContainerStyle{true};
-        ABI::AdaptiveNamespace::ContainerStyle parentContainerStyle;
-        if (containerStyle == ABI::AdaptiveNamespace::ContainerStyle::None)
-        {
-            hasExplicitContainerStyle = false;
-            RETURN_IF_FAILED(renderArgs->get_ContainerStyle(&parentContainerStyle));
-            containerStyle = parentContainerStyle;
-        }
+        RETURN_IF_FAILED(
+            HandleStylingAndPadding(columnSetAsContainerBase.Get(), columnSetBorder.Get(), renderContext, renderArgs, &containerStyle));
 
         ComPtr<IFrameworkElement> parentElement;
         RETURN_IF_FAILED(renderArgs->get_ParentElement(&parentElement));
         ComPtr<IAdaptiveRenderArgs> newRenderArgs;
         RETURN_IF_FAILED(MakeAndInitialize<AdaptiveRenderArgs>(&newRenderArgs, containerStyle, parentElement.Get(), renderArgs));
 
-        // If container style was explicitly assigned, apply background
-        ComPtr<IAdaptiveHostConfig> hostConfig;
-        RETURN_IF_FAILED(renderContext->get_HostConfig(&hostConfig));
-        ABI::Windows::UI::Color backgroundColor;
-        if (hasExplicitContainerStyle)
-        {
-            if (SUCCEEDED(GetBackgroundColorFromStyle(containerStyle, hostConfig.Get(), &backgroundColor)))
-            {
-                ComPtr<IPanel> columnSetAsPanel;
-                RETURN_IF_FAILED(gridContainer.As(&columnSetAsPanel));
-
-                ComPtr<IBrush> backgroundColorBrush = GetSolidColorBrush(backgroundColor);
-                RETURN_IF_FAILED(columnSetAsPanel->put_Background(backgroundColorBrush.Get()));
-            }
-
-            // If the container style doesn't match its parent, and we're not bleeding, apply padding.
-            // if (containerStyle != parentContainerStyle && !bleed)
-            //{
-            //    ComPtr<IAdaptiveSpacingConfig> spacingConfig;
-            //    RETURN_IF_FAILED(hostConfig->get_Spacing(&spacingConfig));
-
-            //    UINT32 padding;
-            //    RETURN_IF_FAILED(spacingConfig->get_Padding(&padding));
-            //    DOUBLE paddingAsDouble = static_cast<DOUBLE>(padding);
-
-            //    Thickness paddingThickness = {paddingAsDouble, paddingAsDouble, paddingAsDouble, paddingAsDouble};
-            //    RETURN_IF_FAILED(containerBorder->put_Padding(paddingThickness));
-            //}
-        }
-
         ComPtr<IGrid> xamlGrid =
             XamlHelpers::CreateXamlClass<IGrid>(HStringReference(RuntimeClass_Windows_UI_Xaml_Controls_Grid));
         ComPtr<IGridStatics> gridStatics;
         RETURN_IF_FAILED(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Controls_Grid).Get(), &gridStatics));
 
-        ComPtr<IVector<AdaptiveColumn*>> columns;
+        ComPtr<IVector<ABI::AdaptiveNamespace::AdaptiveColumn*>> columns;
         RETURN_IF_FAILED(adaptiveColumnSet->get_Columns(&columns));
         int currentColumn{};
         ComPtr<IAdaptiveElementRendererRegistration> elementRenderers;
@@ -2704,10 +2702,13 @@ namespace AdaptiveNamespace
             return S_OK;
         }
 
+        ComPtr<IAdaptiveHostConfig> hostConfig;
+        RETURN_IF_FAILED(renderContext->get_HostConfig(&hostConfig));
+
         boolean ancestorHasFallback;
         RETURN_IF_FAILED(renderArgs->get_AncestorHasFallback(&ancestorHasFallback));
 
-        HRESULT hrColumns = XamlHelpers::IterateOverVector<AdaptiveColumn, IAdaptiveColumn>(
+        HRESULT hrColumns = XamlHelpers::IterateOverVector<ABI::AdaptiveNamespace::AdaptiveColumn, IAdaptiveColumn>(
             columns.Get(),
             ancestorHasFallback,
             [xamlGrid, gridStatics, &currentColumn, renderContext, renderArgs, columnRenderer, hostConfig](IAdaptiveColumn* column) {
@@ -2819,12 +2820,10 @@ namespace AdaptiveNamespace
         RETURN_IF_FAILED(columnSetAsFrameworkElement->put_VerticalAlignment(VerticalAlignment_Stretch));
 
         ComPtr<IAdaptiveActionElement> selectAction;
-        RETURN_IF_FAILED(adaptiveColumnSet->get_SelectAction(&selectAction));
+        RETURN_IF_FAILED(columnSetAsContainerBase->get_SelectAction(&selectAction));
 
         ComPtr<IPanel> gridContainerAsPanel;
         RETURN_IF_FAILED(gridContainer.As(&gridContainerAsPanel));
-        ComPtr<IUIElement> gridContainerAsUIElement;
-        RETURN_IF_FAILED(gridContainer.As(&gridContainerAsUIElement));
 
         ComPtr<IUIElement> gridAsUIElement;
         RETURN_IF_FAILED(xamlGrid.As(&gridAsUIElement));
@@ -2836,10 +2835,14 @@ namespace AdaptiveNamespace
         RETURN_IF_FAILED(columnSetAsCardElement->get_Height(&columnSetHeightType));
 
         XamlHelpers::AppendXamlElementToPanel(xamlGrid.Get(), gridContainerAsPanel.Get(), columnSetHeightType);
+
+        ComPtr<IUIElement> columnSetBorderAsUIElement;
+        RETURN_IF_FAILED(columnSetBorder.As(&columnSetBorderAsUIElement));
+
         HandleSelectAction(adaptiveCardElement,
                            selectAction.Get(),
                            renderContext,
-                           gridContainerAsUIElement.Get(),
+                           columnSetBorderAsUIElement.Get(),
                            SupportsInteractivity(hostConfig.Get()),
                            true,
                            columnSetControl);

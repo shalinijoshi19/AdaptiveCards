@@ -12,6 +12,7 @@ namespace AdaptiveNamespace
     class DECLSPEC_UUID("d674610a-a76b-4283-bd09-b5a25c41433d") AdaptiveColumn
         : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::RuntimeClassType::WinRtClassicComMix>,
                                               ABI::AdaptiveNamespace::IAdaptiveColumn,
+                                              ABI::AdaptiveNamespace::IAdaptiveContainerBase,
                                               ABI::AdaptiveNamespace::IAdaptiveCardElement,
                                               Microsoft::WRL::CloakedIid<ITypePeek>,
                                               Microsoft::WRL::CloakedIid<AdaptiveNamespace::AdaptiveCardElementBase>>
@@ -30,14 +31,8 @@ namespace AdaptiveNamespace
         IFACEMETHODIMP get_PixelWidth(_Out_ UINT32* pixelWidth);
         IFACEMETHODIMP put_PixelWidth(UINT32 pixelWidth);
 
-        IFACEMETHODIMP get_Style(_Out_ ABI::AdaptiveNamespace::ContainerStyle* style);
-        IFACEMETHODIMP put_Style(ABI::AdaptiveNamespace::ContainerStyle style);
-
         IFACEMETHODIMP get_Items(
             _COM_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::IAdaptiveCardElement*>** items);
-
-        IFACEMETHODIMP get_SelectAction(_COM_Outptr_ ABI::AdaptiveNamespace::IAdaptiveActionElement** action);
-        IFACEMETHODIMP put_SelectAction(_In_ ABI::AdaptiveNamespace::IAdaptiveActionElement* action);
 
         IFACEMETHODIMP get_VerticalContentAlignment(_Out_ ABI::AdaptiveNamespace::VerticalContentAlignment* verticalAlignment);
         IFACEMETHODIMP put_VerticalContentAlignment(ABI::AdaptiveNamespace::VerticalContentAlignment verticalAlignment);
@@ -45,8 +40,17 @@ namespace AdaptiveNamespace
         IFACEMETHODIMP get_BackgroundImage(_Outptr_ ABI::AdaptiveNamespace::IAdaptiveBackgroundImage** backgroundImage);
         IFACEMETHODIMP put_BackgroundImage(_In_ ABI::AdaptiveNamespace::IAdaptiveBackgroundImage* backgroundImage);
 
+        // IAdaptiveContainerBase
+        IFACEMETHODIMP get_Style(_Out_ ABI::AdaptiveNamespace::ContainerStyle* style);
+        IFACEMETHODIMP put_Style(ABI::AdaptiveNamespace::ContainerStyle style);
+
+        IFACEMETHODIMP get_SelectAction(_COM_Outptr_ ABI::AdaptiveNamespace::IAdaptiveActionElement** action);
+        IFACEMETHODIMP put_SelectAction(_In_ ABI::AdaptiveNamespace::IAdaptiveActionElement* action);
+
         IFACEMETHODIMP get_Bleed(_Out_ boolean* bleed);
         IFACEMETHODIMP put_Bleed(boolean bleed);
+
+        IFACEMETHODIMP get_BleedDirection(_Out_ ABI::AdaptiveNamespace::BleedDirection* bleedDirection);
 
         // IAdaptiveCardElement
         IFACEMETHODIMP get_ElementType(_Out_ ABI::AdaptiveNamespace::ElementType* elementType);
@@ -133,8 +137,6 @@ namespace AdaptiveNamespace
         // ITypePeek method
         void* PeekAt(REFIID riid) override { return PeekHelper(riid, this); }
 
-        HRESULT get_CanBleed(_Out_ boolean* canBleed);
-
     private:
         Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::IAdaptiveCardElement*>> m_items;
         Microsoft::WRL::ComPtr<ABI::AdaptiveNamespace::IAdaptiveActionElement> m_selectAction;
@@ -145,7 +147,7 @@ namespace AdaptiveNamespace
         ABI::AdaptiveNamespace::VerticalContentAlignment m_verticalAlignment;
         Microsoft::WRL::ComPtr<ABI::AdaptiveNamespace::IAdaptiveBackgroundImage> m_backgroundImage;
         boolean m_bleed;
-        boolean m_canBleed;
+        ABI::AdaptiveNamespace::BleedDirection m_bleedDirection;
     };
 
     ActivatableClass(AdaptiveColumn);

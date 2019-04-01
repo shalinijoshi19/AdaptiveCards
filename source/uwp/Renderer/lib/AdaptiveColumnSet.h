@@ -11,6 +11,7 @@ namespace AdaptiveNamespace
     class DECLSPEC_UUID("3f54eed2-03e8-480b-aede-6f4faae4b731") AdaptiveColumnSet
         : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::RuntimeClassType::WinRtClassicComMix>,
                                               ABI::AdaptiveNamespace::IAdaptiveColumnSet,
+                                              ABI::AdaptiveNamespace::IAdaptiveContainerBase,
                                               ABI::AdaptiveNamespace::IAdaptiveCardElement,
                                               Microsoft::WRL::CloakedIid<ITypePeek>,
                                               Microsoft::WRL::CloakedIid<AdaptiveNamespace::AdaptiveCardElementBase>>
@@ -25,14 +26,17 @@ namespace AdaptiveNamespace
         // IAdaptiveColumnSet
         IFACEMETHODIMP get_Columns(_COM_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveColumn*>** columns);
 
-        IFACEMETHODIMP get_SelectAction(_COM_Outptr_ ABI::AdaptiveNamespace::IAdaptiveActionElement** action);
-        IFACEMETHODIMP put_SelectAction(_In_ ABI::AdaptiveNamespace::IAdaptiveActionElement* action);
-
+        // IAdaptiveContainerBase
         IFACEMETHODIMP get_Style(_Out_ ABI::AdaptiveNamespace::ContainerStyle* style);
         IFACEMETHODIMP put_Style(ABI::AdaptiveNamespace::ContainerStyle style);
 
+        IFACEMETHODIMP get_SelectAction(_COM_Outptr_ ABI::AdaptiveNamespace::IAdaptiveActionElement** action);
+        IFACEMETHODIMP put_SelectAction(_In_ ABI::AdaptiveNamespace::IAdaptiveActionElement* action);
+
         IFACEMETHODIMP get_Bleed(_Out_ boolean* bleed);
         IFACEMETHODIMP put_Bleed(boolean bleed);
+
+        IFACEMETHODIMP get_BleedDirection(_Out_ ABI::AdaptiveNamespace::BleedDirection* bleedDirection);
 
         // IAdaptiveCardElement
         IFACEMETHODIMP get_ElementType(_Out_ ABI::AdaptiveNamespace::ElementType* elementType);
@@ -119,14 +123,12 @@ namespace AdaptiveNamespace
         // ITypePeek method
         void* PeekAt(REFIID riid) override { return PeekHelper(riid, this); }
 
-        HRESULT get_CanBleed(_Out_ boolean* canBleed);
-
     private:
         Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveColumn*>> m_columns;
         Microsoft::WRL::ComPtr<ABI::AdaptiveNamespace::IAdaptiveActionElement> m_selectAction;
         ABI::AdaptiveNamespace::ContainerStyle m_style;
         boolean m_bleed;
-        boolean m_canBleed;
+        ABI::AdaptiveNamespace::BleedDirection m_bleedDirection;
     };
 
     ActivatableClass(AdaptiveColumnSet);
