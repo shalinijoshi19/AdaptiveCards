@@ -133,6 +133,8 @@ namespace AdaptiveNamespace
         // ITypePeek method
         void* PeekAt(REFIID riid) override { return PeekHelper(riid, this); }
 
+        HRESULT get_CanBleed(_Out_ boolean* canBleed);
+
     private:
         Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::IAdaptiveCardElement*>> m_items;
         Microsoft::WRL::ComPtr<ABI::AdaptiveNamespace::IAdaptiveActionElement> m_selectAction;
@@ -143,6 +145,7 @@ namespace AdaptiveNamespace
         ABI::AdaptiveNamespace::VerticalContentAlignment m_verticalAlignment;
         Microsoft::WRL::ComPtr<ABI::AdaptiveNamespace::IAdaptiveBackgroundImage> m_backgroundImage;
         boolean m_bleed;
+        boolean m_canBleed;
     };
 
     ActivatableClass(AdaptiveColumn);

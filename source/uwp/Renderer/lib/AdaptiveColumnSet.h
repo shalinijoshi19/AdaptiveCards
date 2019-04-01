@@ -119,11 +119,14 @@ namespace AdaptiveNamespace
         // ITypePeek method
         void* PeekAt(REFIID riid) override { return PeekHelper(riid, this); }
 
+        HRESULT get_CanBleed(_Out_ boolean* canBleed);
+
     private:
         Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::AdaptiveColumn*>> m_columns;
         Microsoft::WRL::ComPtr<ABI::AdaptiveNamespace::IAdaptiveActionElement> m_selectAction;
         ABI::AdaptiveNamespace::ContainerStyle m_style;
         boolean m_bleed;
+        boolean m_canBleed;
     };
 
     ActivatableClass(AdaptiveColumnSet);

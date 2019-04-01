@@ -112,21 +112,23 @@ namespace AdaptiveNamespace
         return S_OK;
     }
 
-    HRESULT AdaptiveColumn::get_Bleed(_Out_ boolean* isSubtle)
+    HRESULT AdaptiveColumn::get_Bleed(_Out_ boolean* isBleed)
     {
-        *isSubtle = m_bleed;
+        *isBleed = m_bleed;
         return S_OK;
     }
 
-    HRESULT AdaptiveColumn::put_Bleed(boolean isSubtle)
+    HRESULT AdaptiveColumn::put_Bleed(boolean isBleed)
     {
-        m_bleed = isSubtle;
+        m_bleed = isBleed;
         return S_OK;
     }
 
-    HRESULT AdaptiveColumn::get_ElementType(_Out_ ElementType* elementType)
+    HRESULT AdaptiveColumn::get_CanBleed(boolean* canBleed)
     {
-        *elementType = ElementType::Column;
+        // TODO: Current behavior is broken because it doesn't update when bleed updates. Unfortunately, neither does
+        // the shared model logic.
+        *canBleed = m_canBleed;
         return S_OK;
     }
 

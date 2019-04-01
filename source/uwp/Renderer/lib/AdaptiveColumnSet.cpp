@@ -87,6 +87,14 @@ namespace AdaptiveNamespace
         return S_OK;
     }
 
+    HRESULT AdaptiveColumnSet::get_CanBleed(boolean* canBleed)
+    {
+        // TODO: Current behavior is broken because it doesn't update when bleed updates. Unfortunately, neither does
+        // the shared model logic.
+        *canBleed = m_canBleed;
+        return S_OK;
+    }
+
     IFACEMETHODIMP AdaptiveColumnSet::get_ElementType(_Out_ ElementType* elementType)
     {
         *elementType = ElementType::ColumnSet;

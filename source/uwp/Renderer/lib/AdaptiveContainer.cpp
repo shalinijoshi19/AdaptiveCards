@@ -122,17 +122,7 @@ namespace AdaptiveNamespace
     {
         // TODO: Current behavior is broken because it doesn't update when bleed updates. Unfortunately, neither does
         // the shared model logic.
-
-        // std::shared_ptr<AdaptiveSharedNamespace::BaseCardElement> baseCardSharedModel;
-        // RETURN_IF_FAILED(GetSharedModel(baseCardSharedModel));
-
-        // std::shared_ptr<AdaptiveSharedNamespace::Container> containterSharedModel =
-        //    std::static_pointer_cast<AdaptiveSharedNamespace::Container>(baseCardSharedModel);
-
-        //*canBleed = containterSharedModel->GetCanBleed();
-
         *canBleed = m_canBleed;
-
         return S_OK;
     }
 

@@ -42,8 +42,6 @@ namespace AdaptiveNamespace
         IFACEMETHODIMP get_Bleed(_Out_ boolean* bleed);
         IFACEMETHODIMP put_Bleed(boolean bleed);
 
-        IFACEMETHODIMP get_CanBleed(_Out_ boolean* canBleed);
-
         // IAdaptiveCardElement
         IFACEMETHODIMP get_ElementType(_Out_ ABI::AdaptiveNamespace::ElementType* elementType);
 
@@ -128,6 +126,8 @@ namespace AdaptiveNamespace
 
         // ITypePeek method
         void* PeekAt(REFIID riid) override { return PeekHelper(riid, this); }
+
+        HRESULT get_CanBleed(_Out_ boolean* canBleed);
 
     private:
         Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVector<ABI::AdaptiveNamespace::IAdaptiveCardElement*>> m_items;
