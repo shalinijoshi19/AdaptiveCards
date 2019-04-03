@@ -698,38 +698,31 @@ namespace AdaptiveCardsSharedModelUnitTest
             std::string testJsonString {R"(
             {
                 "type": "AdaptiveCard",
-	            "body": [
+                "body": [
                     {
                         "type": "Container",
-                        "id": "One [Container]",
                         "style": "emphasis",
                         "items": [
                             {
                                 "type": "ColumnSet",
-                                "id": "Two [ColumnSet]",
                                 "style": "default",
                                 "columns": [
                                     {
                                         "type": "Column",
-                                        "id": "Three [Column]",
                                         "items": [
                                             {
                                                 "type": "ColumnSet",
-                                                "id": "Four [ColumnSet]",
                                                 "columns": [
                                                     {
                                                         "type": "Column",
-                                                        "id": "Five [Column]",
                                                         "width": "stretch"
                                                     },
                                                     {
                                                         "type": "Column",
-                                                        "id": "Six [Column]",
                                                         "width": "stretch"
                                                     },
                                                     {
                                                         "type": "Column",
-                                                        "id": "Seven [Column]",
                                                         "width": "stretch"
                                                     }
                                                 ]
@@ -739,37 +732,30 @@ namespace AdaptiveCardsSharedModelUnitTest
                                     },
                                     {
                                         "type": "Column",
-                                        "id": "Eight [Column]",
                                         "items": [
                                             {
                                                 "type": "ColumnSet",
-                                                "id": "Nine [ColumnSet]",
                                                 "columns": [
                                                     {
                                                         "type": "Column",
-                                                        "id": "Ten [Column]",
                                                         "items": [
                                                             {
                                                                 "type": "Container",
-                                                                "id": "Eleven [Container]",
                                                                 "style": "emphasis",
-                                                                "bleed": true
+                                                                "bleed":true
                                                             }
                                                         ],
                                                         "width": "stretch"
                                                     },
                                                     {
                                                         "type": "Column",
-                                                        "id": "Twelve [Column]",
                                                         "width": "stretch"
                                                     },
                                                     {
                                                         "type": "Column",
-                                                        "id": "Thirteen [Column]",
                                                         "items": [
                                                             {
                                                                 "type": "Container",
-                                                                "id": "Fourteen [Column]",
                                                                 "style": "emphasis",
                                                                 "bleed": true
                                                             }
@@ -832,6 +818,98 @@ namespace AdaptiveCardsSharedModelUnitTest
             shared_ptr<Column> columnLeft = static_pointer_cast<Column>(columns.at(0));
             Assert::IsTrue(columnLeft->GetStyle() == ContainerStyle::None);
             Assert::IsFalse(columnLeft->GetCanBleed());
+        }
+
+        TEST_METHOD(SequentialColumnSets)
+        {
+            std::string testJsonString {R"(
+            {
+	            "type": "AdaptiveCard",
+                "version":"1.0",
+	            "body": [
+		            {
+			            "type": "ColumnSet",
+			            "columns": [
+				            {
+					            "type": "Column",
+					            "style": "good",
+					            "items": [
+						            {
+							            "type": "TextBlock",
+							            "text": "Column 1"
+						            }
+					            ]
+				            },
+				            {
+					            "type": "Column",
+					            "style": "attention",
+					            "items": [
+						            {
+							            "type": "TextBlock",
+							            "text": "Column 2"
+						            }
+					            ]
+				            },
+				            {
+					            "type": "Column",
+					            "style": "warning",
+					            "items": [
+						            {
+							            "type": "TextBlock",
+							            "text": "Column 3"
+						            }
+					            ]
+				            }
+			            ]
+		            },
+		            {
+			            "type": "ColumnSet",
+			            "columns": [
+				            {
+					            "type": "Column",
+					            "style": "good",
+					            "items": [
+						            {
+							            "type": "TextBlock",
+							            "text": "Column 1"
+						            }
+					            ],
+					            "bleed": true
+				            },
+				            {
+					            "type": "Column",
+					            "style": "attention",
+					            "items": [
+						            {
+							            "type": "TextBlock",
+							            "text": "Column 2"
+						            }
+					            ]
+				            },
+				            {
+					            "type": "Column",
+					            "style": "warning",
+					            "items": [
+						            {
+							            "type": "TextBlock",
+							            "text": "Column 3"
+						            }
+					            ]
+				            }
+			            ]
+		            }
+	            ]
+            }
+            )"};
+
+            auto adaptiveCard = AdaptiveCard::DeserializeFromString(testJsonString, "1.2")->GetAdaptiveCard();
+            Assert::IsTrue(adaptiveCard != nullptr);
+
+            // The first column in the second column set should bleed to the left
+            auto secondColumnSet = std::static_pointer_cast<ColumnSet>(adaptiveCard->GetBody()[1]);
+            Assert::IsTrue(secondColumnSet->GetColumns()[0]->GetCanBleed());
+            Assert::IsTrue(secondColumnSet->GetColumns()[0]->GetBleedDirection() == ContainerBleedDirection::BleedToLeading);
+            
         }
     };
 }
