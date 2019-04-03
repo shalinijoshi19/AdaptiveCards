@@ -35,7 +35,17 @@ namespace AdaptiveSharedNamespace
         AdaptiveSharedNamespace::InternalId PaddingParentInternalId() const;
         void SaveContextForCollectionTypeElement(const std::shared_ptr<CollectionTypeElement>& current);
         void RestoreContextForCollectionTypeElement(const std::shared_ptr<CollectionTypeElement>& current);
-        ContainerBleedDirection GetBleedDirection() const { return m_parentalBleedDirection.back(); }
+        ContainerBleedDirection GetBleedDirection() const
+        {
+            if (!m_parentalBleedDirection.empty())
+            {
+                return m_parentalBleedDirection.back();
+            }
+            else
+            {
+                return ContainerBleedDirection::BleedToBothEdges;
+            }
+        }
         void PushBleedDirection(const ContainerBleedDirection direction)
         {
             m_parentalBleedDirection.push_back(direction);

@@ -63,12 +63,13 @@ void ColumnSet::DeserializeChildren(ParseContext& context, const Json::Value& va
     // for example, if inherited bleed state was BleedToLeft, only LC gets the bleed,
     // the rest of children cannot bleed.
     ContainerBleedDirection previousBleedState = context.GetBleedDirection();
-    ContainerBleedDirection currentBleedState = previousBleedState;
 
     // Deserialize every element in the array
     for (Json::Value& curJsonValue : elementArray)
     {
-        // items in single column has no restriction
+        ContainerBleedDirection currentBleedState = previousBleedState;
+
+        // Items in single column have no restriction
         if (elemSize != 1)
         {
             if (currentIndex == 0)
@@ -115,9 +116,11 @@ void ColumnSet::DeserializeChildren(ParseContext& context, const Json::Value& va
         if (el != nullptr)
         {
             elements.push_back(std::static_pointer_cast<Column>(el));
-            // restores the parent's bleed state
-            context.PopBleedDirection();
         }
+
+        // restores the parent's bleed state
+        context.PopBleedDirection();
+
         ++currentIndex;
     }
 

@@ -697,99 +697,99 @@ namespace AdaptiveCardsSharedModelUnitTest
         {
             std::string testJsonString {R"(
             {
-                "type": "AdaptiveCard",
+	            "type": "AdaptiveCard",
 	            "body": [
-                    {
-                        "type": "Container",
-                        "id": "One [Container]",
-                        "style": "emphasis",
-                        "items": [
-                            {
-                                "type": "ColumnSet",
-                                "id": "Two [ColumnSet]",
-                                "style": "default",
-                                "columns": [
-                                    {
-                                        "type": "Column",
-                                        "id": "Three [Column]",
-                                        "items": [
-                                            {
-                                                "type": "ColumnSet",
-                                                "id": "Four [ColumnSet]",
-                                                "columns": [
-                                                    {
-                                                        "type": "Column",
-                                                        "id": "Five [Column]",
-                                                        "width": "stretch"
-                                                    },
-                                                    {
-                                                        "type": "Column",
-                                                        "id": "Six [Column]",
-                                                        "width": "stretch"
-                                                    },
-                                                    {
-                                                        "type": "Column",
-                                                        "id": "Seven [Column]",
-                                                        "width": "stretch"
-                                                    }
-                                                ]
-                                            }
-                                        ],
-                                        "width": "stretch"
-                                    },
-                                    {
-                                        "type": "Column",
-                                        "id": "Eight [Column]",
-                                        "items": [
-                                            {
-                                                "type": "ColumnSet",
-                                                "id": "Nine [ColumnSet]",
-                                                "columns": [
-                                                    {
-                                                        "type": "Column",
-                                                        "id": "Ten [Column]",
-                                                        "items": [
-                                                            {
-                                                                "type": "Container",
-                                                                "id": "Eleven [Container]",
-                                                                "style": "emphasis",
-                                                                "bleed": true
-                                                            }
-                                                        ],
-                                                        "width": "stretch"
-                                                    },
-                                                    {
-                                                        "type": "Column",
-                                                        "id": "Twelve [Column]",
-                                                        "width": "stretch"
-                                                    },
-                                                    {
-                                                        "type": "Column",
-                                                        "id": "Thirteen [Column]",
-                                                        "items": [
-                                                            {
-                                                                "type": "Container",
-                                                                "id": "Fourteen [Column]",
-                                                                "style": "emphasis",
-                                                                "bleed": true
-                                                            }
-                                                        ],
-                                                        "width": "stretch"
-                                                    }
-                                                ]
-                                            }
-                                        ],
-                                        "width": "stretch"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ],
-                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                "version": "1.2"
+		            {
+			            "type": "Container",
+			            "id": "One (Container)",
+			            "style": "emphasis",
+			            "items": [
+				            {
+					            "type": "ColumnSet",
+					            "id": "Two (ColumnSet)",
+					            "style": "default",
+					            "columns": [
+						            {
+							            "type": "Column",
+							            "id": "Three (Column)",
+							            "items": [
+								            {
+									            "type": "ColumnSet",
+									            "id": "Four (ColumnSet)",
+									            "columns": [
+										            {
+											            "type": "Column",
+											            "id": "Five (Column)",
+											            "width": "stretch"
+										            },
+										            {
+											            "type": "Column",
+											            "id": "Six (Column)",
+											            "width": "stretch"
+										            },
+										            {
+											            "type": "Column",
+											            "id": "Seven (Column)",
+											            "width": "stretch"
+										            }
+									            ]
+								            }
+							            ],
+							            "width": "stretch"
+						            },
+						            {
+							            "type": "Column",
+							            "id": "Eight (Column)",
+							            "items": [
+								            {
+									            "type": "ColumnSet",
+									            "id": "Nine (ColumnSet)",
+									            "columns": [
+										            {
+											            "type": "Column",
+											            "id": "Ten (Column)",
+											            "items": [
+												            {
+													            "type": "Container",
+													            "id": "Eleven (Container)",
+													            "style": "emphasis",
+													            "bleed": true
+												            }
+											            ],
+											            "width": "stretch"
+										            },
+										            {
+											            "type": "Column",
+											            "id": "Twelve (Column)",
+											            "width": "stretch"
+										            },
+										            {
+											            "type": "Column",
+											            "id": "Thirteen (Column)",
+											            "items": [
+												            {
+													            "type": "Container",
+													            "id": "Fourteen (Column)",
+													            "style": "emphasis",
+													            "bleed": true
+												            }
+											            ],
+											            "width": "stretch"
+										            }
+									            ]
+								            }
+							            ],
+							            "width": "stretch"
+						            }
+					            ]
+				            }
+			            ]
+		            }
+	            ],
+	            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+	            "version": "1.2"
             }
-            )"};
+        )"};
 
             using std::shared_ptr;
             using std::static_pointer_cast;

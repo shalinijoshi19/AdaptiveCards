@@ -9,7 +9,7 @@ namespace AdaptiveSharedNamespace
     ParseContext::ParseContext() :
         elementParserRegistration{std::make_shared<ElementParserRegistration>()},
         actionParserRegistration{std::make_shared<ActionParserRegistration>()}, warnings{}, m_idStack{}, m_elementIds{},
-        m_parentalContainerStyles{}
+        m_parentalContainerStyles{}, m_parentalPadding{}, m_parentalBleedDirection{}
     {
     }
 
@@ -277,7 +277,7 @@ namespace AdaptiveSharedNamespace
         // if current container gets padding, it resets container bleed state to not restricted
         if(current && current->GetPadding()) 
         {
-            m_parentalBleedDirection.push_back(ContainerBleedDirection::BleedToBothEdges);
+            PushBleedDirection(ContainerBleedDirection::BleedToBothEdges);
             m_parentalPadding.push_back(current->GetInternalId());
         }
     }
@@ -295,9 +295,8 @@ namespace AdaptiveSharedNamespace
         if(current && current->GetPadding())
         {
             m_parentalPadding.pop_back();
+            PopBleedDirection();
         }
-
-        m_parentalBleedDirection.pop_back();
     }
 
     void ParseContext::SetLanguage(const std::string& value)

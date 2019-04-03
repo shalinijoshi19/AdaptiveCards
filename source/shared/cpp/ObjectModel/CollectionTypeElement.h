@@ -14,8 +14,9 @@ namespace AdaptiveSharedNamespace
         CollectionTypeElement& operator=(const CollectionTypeElement&) = default;
         CollectionTypeElement& operator=(CollectionTypeElement&&) = default;
         ~CollectionTypeElement() = default;
-        CollectionTypeElement(CardElementType type, ContainerStyle style = ContainerStyle::None,
-            VerticalContentAlignment alignment = VerticalContentAlignment::Top);
+        CollectionTypeElement(CardElementType type,
+                              ContainerStyle style = ContainerStyle::None,
+                              VerticalContentAlignment alignment = VerticalContentAlignment::Top);
 
         ContainerStyle GetStyle() const;
         void SetStyle(const ContainerStyle value);
@@ -32,7 +33,7 @@ namespace AdaptiveSharedNamespace
         // when GetCanBleed() return true
         // Can Bleed
         // To find the direction of the bleed
-        // Call GetBleedDirection()        
+        // Call GetBleedDirection()
         // the renderer must also check if HostConfig has
         // padding for card, the root, if the padding is allowed,
         // then the element can bleed to the card
@@ -47,7 +48,7 @@ namespace AdaptiveSharedNamespace
         // such as style, padding and bleed
         void ConfigForContainerStyle(const AdaptiveCards::ParseContext& context);
 
-        void SetParentalId(const AdaptiveSharedNamespace::InternalId &id);
+        void SetParentalId(const AdaptiveSharedNamespace::InternalId& id);
         AdaptiveSharedNamespace::InternalId GetParentalId(void) const;
 
         std::shared_ptr<BaseActionElement> GetSelectAction() const;
