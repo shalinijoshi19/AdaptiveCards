@@ -33,17 +33,16 @@ namespace AdaptiveSharedNamespace
         ContainerStyle GetParentalContainerStyle() const;
         void SetParentalContainerStyle(const ContainerStyle style);
         AdaptiveSharedNamespace::InternalId PaddingParentInternalId() const;
-        void SaveContextForCollectionTypeElement(
-            const std::shared_ptr<CollectionTypeElement>& current);
-        void RestoreContextForCollectionTypeElement(
-            const std::shared_ptr<CollectionTypeElement>& current);
-        ContainerBleedDirection GetBleedDirection() const { return m_currentBleedDirection; }
-        void SetBleedDirection(const ContainerBleedDirection direction) { m_currentBleedDirection = direction; }
+        void SaveContextForCollectionTypeElement(const std::shared_ptr<CollectionTypeElement>& current);
+        void RestoreContextForCollectionTypeElement(const std::shared_ptr<CollectionTypeElement>& current);
+        ContainerBleedDirection GetBleedDirection() const { return m_parentalBleedDirection.back(); }
+        void PushBleedDirection(const ContainerBleedDirection direction)
+        {
+            m_parentalBleedDirection.push_back(direction);
+        }
+        void PopBleedDirection() { m_parentalBleedDirection.pop_back(); }
 
     private:
-        void SetPreviousBleedState(const ContainerBleedDirection state) { m_previousBleedDirection = state; }
-        ContainerBleedDirection GetPreviousBleedState() const { return m_previousBleedDirection; }
-
         const AdaptiveSharedNamespace::InternalId GetNearestFallbackId(const AdaptiveSharedNamespace::InternalId& skipId) const;
         // This enum is just a helper to keep track of the position of contents within the std::tuple used in
         // m_idStack below. We don't use enum class here because we don't want typed values for use in std::get
@@ -68,12 +67,10 @@ namespace AdaptiveSharedNamespace
         //
         //                             (ID,  internal ID, isFallback)[]
         std::vector<std::tuple<std::string, AdaptiveSharedNamespace::InternalId, bool>> m_idStack;
+
         std::vector<ContainerStyle> m_parentalContainerStyles;
         std::vector<AdaptiveSharedNamespace::InternalId> m_parentalPadding;
-
-        ContainerStyle m_parentalContainerStyle;
-        ContainerBleedDirection m_currentBleedDirection;
-        ContainerBleedDirection m_previousBleedDirection;
+        std::vector<ContainerBleedDirection> m_parentalBleedDirection;
 
         std::string m_language;
     };

@@ -121,7 +121,7 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <Content Include="..\..\..\samples\v1.2\Elements\Column.Bleed.json" />
+    <Content Include="..\..\..\samples\v1.2\Elements\Column.Bleed.Complicated.json" />
     <None Include="AdaptiveCardTestApp_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>

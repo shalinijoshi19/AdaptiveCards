@@ -44,16 +44,8 @@ void CollectionTypeElement::SetPadding(const bool value)
 void CollectionTypeElement::ConfigPadding(const ParseContext& context)
 {
     // we set padding when parental style is different from child's, and its style should not be None
-    if ((GetStyle() != ContainerStyle::None) && (context.GetParentalContainerStyle() != GetStyle()) &&
-        (context.GetParentalContainerStyle() != ContainerStyle::NotSet))
-    {
-        SetPadding(!(context.GetParentalContainerStyle() == ContainerStyle::None &&
-            GetStyle() == ContainerStyle::Default));
-    } 
-    else 
-    {
-        SetPadding(false);
-    }
+    bool padding = (GetStyle() != ContainerStyle::None) && (context.GetParentalContainerStyle() != GetStyle());
+    SetPadding(padding);
 }
 
 bool CollectionTypeElement::GetBleed() const
@@ -75,13 +67,12 @@ void CollectionTypeElement::ConfigBleed(const AdaptiveCards::ParseContext& conte
     if (canBleed && context.GetBleedDirection() != ContainerBleedDirection::BleedRestricted)
     {
         SetParentalId(id);
-        SetCanBleed(true);
+        SetBleedDirection(context.GetBleedDirection());
     }
     else
     { 
-        SetCanBleed(false);
+        SetBleedDirection(ContainerBleedDirection::BleedRestricted);
     }
-    SetBleedDirection(context.GetBleedDirection());
 }
 
 void CollectionTypeElement::SetParentalId(const AdaptiveSharedNamespace::InternalId &id)
