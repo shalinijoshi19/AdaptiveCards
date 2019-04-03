@@ -9,6 +9,19 @@
 
 namespace AdaptiveSharedNamespace
 {
+    std::string ParseUtil::JsonToString(const Json::Value& json)
+    {
+        static Json::StreamWriterBuilder builder;
+        builder["commentStyle"] = "None";
+        builder["indentation"] = "";
+        std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+
+        std::ostringstream outStream;
+        writer->write(json, &outStream);
+        outStream << std::endl;
+        return outStream.str();
+    }
+
     void ParseUtil::ThrowIfNotJsonObject(const Json::Value& json)
     {
         if (!json.isObject())
@@ -38,6 +51,20 @@ namespace AdaptiveSharedNamespace
         catch (const AdaptiveCardParseException&)
         {
             return "";
+        }
+    }
+
+    std::string ParseUtil::TryGetString(const Json::Value& json, AdaptiveCardSchemaKey key)
+    {
+        std::string propertyName = AdaptiveCardSchemaKeyToString(key);
+        auto propertyValue = json.get(propertyName, Json::Value());
+        if (propertyValue.empty() || !propertyValue.isString())
+        {
+            return "";
+        }
+        else
+        {
+            return propertyValue.asString();
         }
     }
 
@@ -224,10 +251,9 @@ namespace AdaptiveSharedNamespace
         return propertyValue.asInt();
     }
 
-    void ParseUtil::ExpectTypeString(const Json::Value& json, CardElementType bodyType)
+    void ParseUtil::ExpectTypeString(const Json::Value& json, const std::string& expectedTypeStr)
     {
         std::string actualType = GetTypeAsString(json);
-        std::string expectedTypeStr = CardElementTypeToString(bodyType);
         const bool isTypeCorrect = expectedTypeStr.compare(actualType) == 0;
         if (!isTypeCorrect)
         {
@@ -235,6 +261,11 @@ namespace AdaptiveSharedNamespace
                                              "The JSON element did not have the correct type. Expected: " + expectedTypeStr +
                                                  ", Actual: " + actualType);
         }
+    }
+
+    void ParseUtil::ExpectTypeString(const Json::Value& json, CardElementType bodyType)
+    {
+        return ExpectTypeString(json, CardElementTypeToString(bodyType));
     }
 
     // throws if the key is missing or the value mapped to the key is the wrong type
@@ -308,9 +339,14 @@ namespace AdaptiveSharedNamespace
 
     Json::Value ParseUtil::GetJsonValueFromString(const std::string& jsonString)
     {
-        Json::Reader reader;
+        std::istringstream jsonStream(jsonString);
         Json::Value jsonValue;
-        if (!reader.parse(jsonString.c_str(), jsonValue))
+
+        try
+        {
+            jsonStream >> jsonValue;
+        }
+        catch (const Json::RuntimeError&)
         {
             throw AdaptiveCardParseException(ErrorStatusCode::InvalidJson, "Expected JSON Object");
         }

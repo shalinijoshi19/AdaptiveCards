@@ -62,6 +62,13 @@ namespace AdaptiveCards.Rendering.Wpf
 
         public void InvokeAction(FrameworkElement ui, AdaptiveActionEventArgs args)
         {
+            // ToggleVisibility is a renderer-handled action
+            if (args.Action is AdaptiveToggleVisibilityAction toggleVisibilityAction)
+            {
+                this.ToggleVisibility(toggleVisibilityAction.TargetElements);
+                return;
+            }
+
             OnAction?.Invoke(ui, args);
         }
 
@@ -210,8 +217,50 @@ namespace AdaptiveCards.Rendering.Wpf
 
         public FrameworkElement CardRoot { get; set; }
 
-        public AdaptiveContainerStyle ParentStyle { get; set; } = AdaptiveContainerStyle.Default;
+        public AdaptiveRenderArgs RenderArgs { get; set; }
+        public FontColorConfig GetForegroundColors(AdaptiveTextColor textColor)
+        {
+            switch (textColor)
+            {
+                case AdaptiveTextColor.Accent:
+                    return RenderArgs.ForegroundColors.Accent;
+                case AdaptiveTextColor.Attention:
+                    return RenderArgs.ForegroundColors.Attention;
+                case AdaptiveTextColor.Dark:
+                    return RenderArgs.ForegroundColors.Dark;
+                case AdaptiveTextColor.Good:
+                    return RenderArgs.ForegroundColors.Good;
+                case AdaptiveTextColor.Light:
+                    return RenderArgs.ForegroundColors.Light;
+                case AdaptiveTextColor.Warning:
+                    return RenderArgs.ForegroundColors.Warning;
+                case AdaptiveTextColor.Default:
+                default:
+                    return RenderArgs.ForegroundColors.Default;
+            }
+        }
 
-        public ForegroundColorsConfig ForegroundColors { get; set; }
+        public void ToggleVisibility(IEnumerable<AdaptiveTargetElement> targetElements)
+        {
+            foreach (AdaptiveTargetElement targetElement in targetElements)
+            {
+                var element = LogicalTreeHelper.FindLogicalNode(CardRoot, targetElement.ElementId);
+
+                if (element != null && element is FrameworkElement elementFrameworkElement)
+                {
+                    Visibility visibility = elementFrameworkElement.Visibility;
+                    // if we read something with the format {"elementId": <id>", "isVisible": true} or we just read the id and the element is not visible
+                    if ((targetElement.IsVisible.HasValue && targetElement.IsVisible.Value) || (!targetElement.IsVisible.HasValue && visibility != Visibility.Visible))
+                    {
+                        elementFrameworkElement.Visibility = Visibility.Visible;
+                    }
+                    // otherwise if we read something with the format {"elementId": <id>", "isVisible": false} or we just read the id and the element is visible
+                    else if ((targetElement.IsVisible.HasValue && !targetElement.IsVisible.Value) || (!targetElement.IsVisible.HasValue && visibility == Visibility.Visible))
+                    {
+                        elementFrameworkElement.Visibility = Visibility.Collapsed;
+                    }
+                }
+            }
+        }
     }
 }

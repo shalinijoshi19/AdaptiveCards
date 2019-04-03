@@ -141,7 +141,9 @@ public class AdaptiveCardRenderer
 
         layout.setBackgroundColor(Color.parseColor(color));
 
-        CardRendererRegistration.getInstance().render(renderedCard, context, fragmentManager, layout, adaptiveCard, baseCardElementList, cardActionHandler, hostConfig, style);
+        RenderArgs renderArgs = new RenderArgs();
+        renderArgs.setContainerStyle(style);
+        CardRendererRegistration.getInstance().render(renderedCard, context, fragmentManager, layout, adaptiveCard, baseCardElementList, cardActionHandler, hostConfig, renderArgs);
 
         if (hostConfig.GetSupportsInteractivity())
         {
@@ -156,7 +158,7 @@ public class AdaptiveCardRenderer
 
                 IActionLayoutRenderer actionLayoutRenderer = CardRendererRegistration.getInstance().getActionLayoutRenderer();
                 if(actionLayoutRenderer != null) {
-                    actionLayoutRenderer.renderActions(renderedCard, context, fragmentManager, layout, baseActionElementList, cardActionHandler, hostConfig);
+                    actionLayoutRenderer.renderActions(renderedCard, context, fragmentManager, layout, baseActionElementList, cardActionHandler, hostConfig, renderArgs);
                 }
             }
         }
@@ -176,6 +178,12 @@ public class AdaptiveCardRenderer
                     context.getResources().getDisplayMetrics().widthPixels,
                     backgroundImageProperties);
 
+            IOnlineImageLoader onlineImageLoader = CardRendererRegistration.getInstance().getOnlineImageLoader();
+            if (onlineImageLoader != null)
+            {
+                loaderAsync.registerCustomOnlineImageLoader(onlineImageLoader);
+            }
+
             loaderAsync.execute(backgroundImageProperties.GetUrl());
         }
 
@@ -190,5 +198,6 @@ public class AdaptiveCardRenderer
     }
 
     private static AdaptiveCardRenderer s_instance = null;
+    private IOnlineImageLoader m_onlineImageLoader = null;
     private HostConfig defaultHostConfig = new HostConfig();
 }

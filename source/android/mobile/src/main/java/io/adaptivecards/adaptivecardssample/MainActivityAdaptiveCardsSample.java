@@ -25,9 +25,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import io.adaptivecards.renderer.GenericImageLoaderAsync;
+import io.adaptivecards.renderer.IOnlineImageLoader;
 import io.adaptivecards.renderer.IResourceResolver;
 import io.adaptivecards.renderer.IMediaDataSourceOnPreparedListener;
 import io.adaptivecards.renderer.IOnlineMediaLoader;
+import io.adaptivecards.renderer.RenderArgs;
 import io.adaptivecards.renderer.RenderedAdaptiveCard;
 import io.adaptivecards.renderer.BaseCardElementRenderer;
 import io.adaptivecards.renderer.Util;
@@ -189,7 +191,7 @@ public class MainActivityAdaptiveCardsSample extends FragmentActivity
     public class CustomBlahRenderer extends BaseCardElementRenderer
     {
         @Override
-        public View render(RenderedAdaptiveCard renderedAdaptiveCard, Context context, FragmentManager fragmentManager, ViewGroup viewGroup, BaseCardElement baseCardElement, ICardActionHandler cardActionHandler, HostConfig hostConfig, ContainerStyle containerStyle) {
+        public View render(RenderedAdaptiveCard renderedAdaptiveCard, Context context, FragmentManager fragmentManager, ViewGroup viewGroup, BaseCardElement baseCardElement, ICardActionHandler cardActionHandler, HostConfig hostConfig, RenderArgs renderArgs) {
             TextView textView = new TextView(context);
 
             CustomCardElement element = (CustomCardElement) baseCardElement.findImplObj();
@@ -732,5 +734,30 @@ public class MainActivityAdaptiveCardsSample extends FragmentActivity
                 return new HttpRequestResult<>(bitmap);
             }
         });
+
+        // Code to demonstrate how IOnlineImageLoader registration works, uncomment to test, you should see that all images rendered are all the same cat
+        /*
+        CardRendererRegistration.getInstance().registerOnlineImageLoader(new IOnlineImageLoader() {
+            @Override
+            public HttpRequestResult<Bitmap> loadOnlineImage(String url, GenericImageLoaderAsync loader) throws IOException, URISyntaxException
+            {
+                String catImnageUri = "http://adaptivecards.io/content/cats/1.png";
+                byte[] bytes = HttpRequestHelper.get(catImnageUri);
+                if (bytes == null)
+                {
+                    throw new IOException("Failed to retrieve content from " + catImnageUri);
+                }
+
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+
+                if (bitmap == null)
+                {
+                    throw new IOException("Failed to convert content to bitmap: " + new String(bytes));
+                }
+
+                return new HttpRequestResult<>(bitmap);
+            }
+        });
+        */
     }
 }

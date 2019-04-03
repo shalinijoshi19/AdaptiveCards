@@ -3,6 +3,7 @@
 #include "ActionSet.h"
 #include "ChoiceSetInput.h"
 #include "ColumnSet.h"
+#include "Column.h"
 #include "Container.h"
 #include "DateInput.h"
 #include "FactSet.h"
@@ -10,6 +11,7 @@
 #include "ImageSet.h"
 #include "Media.h"
 #include "NumberInput.h"
+#include "RichTextBlock.h"
 #include "TextBlock.h"
 #include "TextInput.h"
 #include "TimeInput.h"
@@ -45,6 +47,7 @@ namespace AdaptiveSharedNamespace
         m_knownElements.insert({
             CardElementTypeToString(CardElementType::ActionSet),
             CardElementTypeToString(CardElementType::Container),
+            CardElementTypeToString(CardElementType::Column),
             CardElementTypeToString(CardElementType::ColumnSet),
             CardElementTypeToString(CardElementType::FactSet),
             CardElementTypeToString(CardElementType::Image),
@@ -53,6 +56,7 @@ namespace AdaptiveSharedNamespace
             CardElementTypeToString(CardElementType::DateInput),
             CardElementTypeToString(CardElementType::Media),
             CardElementTypeToString(CardElementType::NumberInput),
+            CardElementTypeToString(CardElementType::RichTextBlock),
             CardElementTypeToString(CardElementType::TextBlock),
             CardElementTypeToString(CardElementType::TextInput),
             CardElementTypeToString(CardElementType::TimeInput),
@@ -63,6 +67,7 @@ namespace AdaptiveSharedNamespace
         m_cardElementParsers.insert(
             {{CardElementTypeToString(CardElementType::ActionSet), std::make_shared<ActionSetParser>()},
              {CardElementTypeToString(CardElementType::Container), std::make_shared<ContainerParser>()},
+             {CardElementTypeToString(CardElementType::Column), std::make_shared<ColumnParser>()},
              {CardElementTypeToString(CardElementType::ColumnSet), std::make_shared<ColumnSetParser>()},
              {CardElementTypeToString(CardElementType::FactSet), std::make_shared<FactSetParser>()},
              {CardElementTypeToString(CardElementType::Image), std::make_shared<ImageParser>()},
@@ -71,6 +76,7 @@ namespace AdaptiveSharedNamespace
              {CardElementTypeToString(CardElementType::DateInput), std::make_shared<DateInputParser>()},
              {CardElementTypeToString(CardElementType::Media), std::make_shared<MediaParser>()},
              {CardElementTypeToString(CardElementType::NumberInput), std::make_shared<NumberInputParser>()},
+             {CardElementTypeToString(CardElementType::RichTextBlock), std::make_shared<RichTextBlockParser>()},
              {CardElementTypeToString(CardElementType::TextBlock), std::make_shared<TextBlockParser>()},
              {CardElementTypeToString(CardElementType::TextInput), std::make_shared<TextInputParser>()},
              {CardElementTypeToString(CardElementType::TimeInput), std::make_shared<TimeInputParser>()},

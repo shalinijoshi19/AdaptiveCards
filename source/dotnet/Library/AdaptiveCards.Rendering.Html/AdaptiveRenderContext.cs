@@ -11,7 +11,7 @@ namespace AdaptiveCards.Rendering.Html
             // clone it
             Config = JsonConvert.DeserializeObject<AdaptiveHostConfig>(JsonConvert.SerializeObject(hostConfig));
             ElementRenderers = elementRenderers;
-            ForegroundColors = Config.ContainerStyles.Default.ForegroundColors;
+            RenderArgs = new AdaptiveRenderArgs { ForegroundColors = Config.ContainerStyles.Default.ForegroundColors };
         }
 
         public AdaptiveHostConfig Config { get; set; }
@@ -65,25 +65,25 @@ namespace AdaptiveCards.Rendering.Html
             switch (color)
             {
                 case AdaptiveTextColor.Accent:
-                    colorConfig = ForegroundColors.Accent;
+                    colorConfig = RenderArgs.ForegroundColors.Accent;
                     break;
                 case AdaptiveTextColor.Good:
-                    colorConfig = ForegroundColors.Good;
+                    colorConfig = RenderArgs.ForegroundColors.Good;
                     break;
                 case AdaptiveTextColor.Warning:
-                    colorConfig = ForegroundColors.Warning;
+                    colorConfig = RenderArgs.ForegroundColors.Warning;
                     break;
                 case AdaptiveTextColor.Attention:
-                    colorConfig = ForegroundColors.Attention;
+                    colorConfig = RenderArgs.ForegroundColors.Attention;
                     break;
                 case AdaptiveTextColor.Dark:
-                    colorConfig = ForegroundColors.Dark;
+                    colorConfig = RenderArgs.ForegroundColors.Dark;
                     break;
                 case AdaptiveTextColor.Light:
-                    colorConfig = ForegroundColors.Light;
+                    colorConfig = RenderArgs.ForegroundColors.Light;
                     break;
                 default:
-                    colorConfig = ForegroundColors.Default;
+                    colorConfig = RenderArgs.ForegroundColors.Default;
                     break;
             }
             return GetRGBColor(isSubtle ? colorConfig.Subtle : colorConfig.Default);
@@ -105,9 +105,7 @@ namespace AdaptiveCards.Rendering.Html
         }
 
         public string Lang { get; set; }
-
-        public AdaptiveContainerStyle ParentStyle { get; set; } = AdaptiveContainerStyle.Default;
-
-        public ForegroundColorsConfig ForegroundColors { get; set; }
+        
+        public AdaptiveRenderArgs RenderArgs { get; set; }
     }
 }
