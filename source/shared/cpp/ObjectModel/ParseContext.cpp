@@ -1,24 +1,37 @@
 #include "pch.h"
 #include "ParseContext.h"
+
 #include "AdaptiveCardParseException.h"
 #include "BaseElement.h"
 #include "CollectionTypeElement.h"
+#include "FeatureRegistration.h"
 
 namespace AdaptiveSharedNamespace
 {
     ParseContext::ParseContext() :
         elementParserRegistration{std::make_shared<ElementParserRegistration>()},
-        actionParserRegistration{std::make_shared<ActionParserRegistration>()}, warnings{}, m_idStack{}, m_elementIds{},
-        m_parentalContainerStyles{}, m_previousBleedDirection{ContainerBleedDirection::BleedToBothEdges}, m_currentBleedDirection{ContainerBleedDirection::BleedToBothEdges}
+        actionParserRegistration{std::make_shared<ActionParserRegistration>()},
+        featureRegistration{std::make_shared<FeatureRegistration>()}, warnings{}, m_idStack{}, m_elementIds{}, m_parentalContainerStyles{},
+        m_previousBleedDirection{ContainerBleedDirection::BleedToBothEdges}, m_currentBleedDirection{ContainerBleedDirection::BleedToBothEdges}
     {
     }
 
-    ParseContext::ParseContext(std::shared_ptr<ElementParserRegistration> elementRegistration, std::shared_ptr<ActionParserRegistration> actionRegistration) :
-        warnings{}, m_idStack{}, m_elementIds{}, m_parentalContainerStyles{},
-        m_previousBleedDirection{ContainerBleedDirection::BleedToBothEdges}, m_currentBleedDirection{ContainerBleedDirection::BleedToBothEdges}
+    ParseContext::ParseContext(std::shared_ptr<ElementParserRegistration> elementRegistration,
+                               std::shared_ptr<ActionParserRegistration> actionRegistration) :
+        ParseContext(elementRegistration, actionRegistration, nullptr)
+    {
+    }
+
+    ParseContext::ParseContext(std::shared_ptr<ElementParserRegistration> elementRegistration,
+                               std::shared_ptr<ActionParserRegistration> actionRegistration,
+                               std::shared_ptr<FeatureRegistration> featureRegistration) :
+        warnings{},
+        m_idStack{}, m_elementIds{}, m_parentalContainerStyles{}, m_previousBleedDirection{ContainerBleedDirection::BleedToBothEdges},
+        m_currentBleedDirection{ContainerBleedDirection::BleedToBothEdges}
     {
         elementParserRegistration = (elementRegistration) ? elementRegistration : std::make_shared<ElementParserRegistration>();
         actionParserRegistration = (actionRegistration) ? actionRegistration : std::make_shared<ActionParserRegistration>();
+        featureRegistration = (featureRegistration) ? featureRegistration : std::make_shared<FeatureRegistration>();
     }
 
     // Detecting ID collisions
@@ -249,7 +262,7 @@ namespace AdaptiveSharedNamespace
     {
         return m_parentalContainerStyles.size() ? m_parentalContainerStyles.back() : ContainerStyle::NotSet;
     }
-    
+
     void ParseContext::SetParentalContainerStyle(const ContainerStyle style)
     {
         m_parentalContainerStyles.push_back(style);
@@ -276,7 +289,7 @@ namespace AdaptiveSharedNamespace
         // save id of the current if the current has the padding
         // it will be the new parent id for children, when parsing is continued dfs
         // if current container gets padding, it resets container bleed state to not restricted
-        if(current && current->GetPadding()) 
+        if (current && current->GetPadding())
         {
             SetPreviousBleedState(GetBleedDirection());
             SetBleedDirection(ContainerBleedDirection::BleedToBothEdges);
@@ -284,17 +297,16 @@ namespace AdaptiveSharedNamespace
         }
     }
 
-    void ParseContext::RestoreContextForCollectionTypeElement(
-        const std::shared_ptr<CollectionTypeElement>& current)
+    void ParseContext::RestoreContextForCollectionTypeElement(const std::shared_ptr<CollectionTypeElement>& current)
     {
         // pop container style
-        if(m_parentalContainerStyles.size() && current->GetStyle() != ContainerStyle::None)
+        if (m_parentalContainerStyles.size() && current->GetStyle() != ContainerStyle::None)
         {
             m_parentalContainerStyles.pop_back();
         }
 
         // restore to previous parental id for further parsing of remaining items
-        if(current && current->GetPadding())
+        if (current && current->GetPadding())
         {
             m_parentalPadding.pop_back();
         }
@@ -302,10 +314,7 @@ namespace AdaptiveSharedNamespace
         SetBleedDirection(GetPreviousBleedState());
     }
 
-    void ParseContext::SetLanguage(const std::string& value)
-    {
-        m_language = value;
-    }
+    void ParseContext::SetLanguage(const std::string& value) { m_language = value; }
 
     std::string ParseContext::GetLanguage() const { return m_language; }
 }
